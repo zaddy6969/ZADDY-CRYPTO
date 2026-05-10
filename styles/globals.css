@@ -49,6 +49,12 @@ select {
   font: inherit;
 }
 
+button:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
 .dashboard-shell {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
@@ -773,6 +779,30 @@ select {
 .assistant-suggestions {
   display: grid;
   gap: 12px;
+}
+
+.assistant-contract-preview {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+}
+
+.assistant-contract-preview.compact {
+  gap: 8px;
+}
+
+.assistant-contract-preview strong {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.9rem;
+}
+
+.assistant-contract-preview p {
+  margin: 0;
+  line-height: 1.6;
+  color: #e6eef7;
 }
 
 .assistant-context-row {

@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { ARC_AI_WALLET_ASSISTANT_LIMITS } from "../lib/arc-assistant-contract";
+import { useArcAssistantContract } from "../lib/use-arc-assistant-contract";
 import { useArcWalletSnapshot } from "../lib/use-arc-wallet-snapshot";
 
 const starterQuestions = [
@@ -32,6 +34,21 @@ export default function WalletAssistant({
     usdcBalance,
     balanceStatus
   } = useArcWalletSnapshot();
+  const {
+    assistantName,
+    contractAddress,
+    contractConfigured,
+    contractError,
+    contractExplorerUrl,
+    contractStatus,
+    interactionCount,
+    lastTransactionHash,
+    latestInteraction,
+    latestTransactionUrl,
+    saveError,
+    saveInteraction,
+    saveStatus
+  } = useArcAssistantContract();
   const [runtimeMode, setRuntimeMode] = useState(assistantMode || "local");
   const [messages, setMessages] = useState([
     {
@@ -45,6 +62,7 @@ export default function WalletAssistant({
   const [question, setQuestion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [latestOnchainDraft, setLatestOnchainDraft] = useState(null);
   const [notice, setNotice] = useState(
     assistantMode === "openai"
       ? ""
@@ -108,6 +126,12 @@ export default function WalletAssistant({
             "I couldn't produce an answer from the current wallet data."
         }
       ]);
+      setLatestOnchainDraft({
+        prompt: trimmed,
+        response:
+          payload.answer ||
+          "I couldn't produce an answer from the current wallet data."
+      });
     } catch (requestError) {
       setError(
         requestError.message ||
@@ -122,6 +146,20 @@ export default function WalletAssistant({
     event.preventDefault();
     await askQuestion(question);
   };
+
+  const handleSaveOnchain = async () => {
+    if (!latestOnchainDraft) return;
+
+    try {
+      await saveInteraction(latestOnchainDraft);
+    } catch {}
+  };
+
+  const canSaveOnchain =
+    Boolean(latestOnchainDraft) &&
+    contractConfigured &&
+    saveStatus !== "awaiting-wallet" &&
+    saveStatus !== "confirming";
 
   return (
     <section className="panel assistant-panel" id="section-assistant">
@@ -237,6 +275,115 @@ export default function WalletAssistant({
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="assistant-side-card">
+            <span className="eyebrow">Onchain Assistant</span>
+            <div className="assistant-context-list">
+              <div className="assistant-context-row">
+                <span>Contract status</span>
+                <strong>
+                  {contractConfigured
+                    ? contractStatus === "ready"
+                      ? "Connected"
+                      : contractStatus === "loading"
+                        ? "Loading..."
+                        : contractStatus
+                    : "Not deployed"}
+                </strong>
+              </div>
+              <div className="assistant-context-row">
+                <span>Assistant name</span>
+                <strong>{assistantName || "arc-ai-wallet"}</strong>
+              </div>
+              <div className="assistant-context-row">
+                <span>Contract address</span>
+                <strong>{contractAddress || "Run the Hardhat deploy first"}</strong>
+              </div>
+              <div className="assistant-context-row">
+                <span>Total interactions</span>
+                <strong>{contractConfigured ? interactionCount : "0"}</strong>
+              </div>
+              <div className="assistant-context-row">
+                <span>Prompt limit</span>
+                <strong>{ARC_AI_WALLET_ASSISTANT_LIMITS.prompt} chars</strong>
+              </div>
+              <div className="assistant-context-row">
+                <span>Response limit</span>
+                <strong>{ARC_AI_WALLET_ASSISTANT_LIMITS.response} chars</strong>
+              </div>
+            </div>
+
+            {contractExplorerUrl ? (
+              <a
+                className="inline-link"
+                href={contractExplorerUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                View contract on ArcScan
+              </a>
+            ) : null}
+
+            {latestInteraction ? (
+              <div className="assistant-contract-preview">
+                <span className="assistant-message-role">
+                  Latest saved interaction
+                </span>
+                <strong>#{latestInteraction.interactionId}</strong>
+                <p>{latestInteraction.prompt}</p>
+                <p>{latestInteraction.response}</p>
+                <span className="assistant-hint">
+                  Saved {latestInteraction.createdAtLabel}
+                </span>
+              </div>
+            ) : (
+              <p className="assistant-hint">
+                {contractConfigured
+                  ? "No interaction has been saved from this wallet yet."
+                  : "Deploy the assistant contract, then the frontend will read its address and onchain state here."}
+              </p>
+            )}
+
+            <button
+              type="button"
+              className="primary-button"
+              onClick={handleSaveOnchain}
+              disabled={!canSaveOnchain}
+            >
+              {saveStatus === "awaiting-wallet"
+                ? "Confirm in wallet..."
+                : saveStatus === "confirming"
+                  ? "Saving on Arc..."
+                  : saveStatus === "success"
+                    ? "Saved on Arc"
+                    : "Save latest answer on Arc"}
+            </button>
+
+            {latestOnchainDraft ? (
+              <div className="assistant-contract-preview compact">
+                <span className="assistant-message-role">Ready to save</span>
+                <p>{latestOnchainDraft.prompt}</p>
+              </div>
+            ) : (
+              <p className="assistant-hint">
+                Ask a question first, then you can write that prompt and answer to the Arc assistant contract.
+              </p>
+            )}
+
+            {latestTransactionUrl ? (
+              <a
+                className="inline-link"
+                href={latestTransactionUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                View transaction {lastTransactionHash.slice(0, 10)}...
+              </a>
+            ) : null}
+
+            {saveError ? <p className="wallet-error">{saveError}</p> : null}
+            {contractError ? <p className="wallet-error">{contractError}</p> : null}
           </div>
         </aside>
       </div>

@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "contract:compile": "hardhat compile",
+    "contract:deploy:arc": "hardhat run scripts/deploy-assistant.js --network arcTestnet"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.11",
@@ -17,5 +19,10 @@
     "react-dom": "19.1.1",
     "viem": "^2.37.3",
     "wagmi": "^2.16.9"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.9",
+    "dotenv": "^17.2.3",
+    "hardhat": "^2.26.3"
   }
 }
