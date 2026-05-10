@@ -206,7 +206,7 @@ export default function WalletConnect({ marketData }) {
 
             {!hasWalletConnectProjectId ? (
               <p className="wallet-error">
-                Set <code>NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID</code> in <code>.env.local</code> for full WalletConnect support.
+                Set <code>NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID</code> in your environment variables for full WalletConnect support on local and deployed builds.
               </p>
             ) : null}
 

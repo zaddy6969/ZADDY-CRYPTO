@@ -7,6 +7,10 @@ export default async function handler(req, res) {
 
   try {
     const marketData = await getLiveMarketPrices();
+    res.setHeader(
+      "Cache-Control",
+      "public, s-maxage=30, stale-while-revalidate=120"
+    );
 
     return res.status(200).json({ marketData });
   } catch {

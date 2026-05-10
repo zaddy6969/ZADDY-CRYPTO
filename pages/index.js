@@ -377,13 +377,14 @@ export default function Home({ assistantMode, initialMarketData }) {
   );
 }
 
-export async function getServerSideProps() {
+export async function getStaticProps() {
   const initialMarketData = await getLiveMarketPrices();
 
   return {
     props: {
       assistantMode: process.env.OPENAI_API_KEY ? "openai" : "local",
       initialMarketData
-    }
+    },
+    revalidate: 30
   };
 }

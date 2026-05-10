@@ -48,7 +48,7 @@ export default function WalletAssistant({
   const [notice, setNotice] = useState(
     assistantMode === "openai"
       ? ""
-      : "Running in local analysis mode until OPENAI_API_KEY is added."
+      : "Running in local analysis mode until OPENAI_API_KEY is added to the active environment."
   );
 
   const walletSummary = useMemo(
