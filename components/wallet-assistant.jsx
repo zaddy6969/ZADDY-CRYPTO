@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { ARC_AI_WALLET_ASSISTANT_LIMITS } from "../lib/arc-assistant-contract";
 import { useArcAssistantContract } from "../lib/use-arc-assistant-contract";
-import { useArcWalletSnapshot } from "../lib/use-arc-wallet-snapshot";
 
 const starterQuestions = [
   "Summarize my current wallet status.",
@@ -23,17 +22,15 @@ function MessageBubble({ message }) {
 
 export default function WalletAssistant({
   activity,
+  activityStatus,
+  activityError,
   statCards,
   chainMetrics,
-  assistantMode
+  assistantMode,
+  walletSnapshot
 }) {
-  const {
-    address,
-    isConnected,
-    onArc,
-    usdcBalance,
-    balanceStatus
-  } = useArcWalletSnapshot();
+  const { address, isConnected, onArc, usdcBalance, balanceStatus } =
+    walletSnapshot || {};
   const {
     assistantName,
     contractAddress,
@@ -75,9 +72,10 @@ export default function WalletAssistant({
       connected: isConnected,
       onArc,
       usdcBalance: balanceStatus === "ready" ? usdcBalance : balanceStatus,
+      activityStatus,
       network: "Arc Testnet"
     }),
-    [address, balanceStatus, isConnected, onArc, usdcBalance]
+    [activityStatus, address, balanceStatus, isConnected, onArc, usdcBalance]
   );
 
   const askQuestion = async (nextQuestion) => {
@@ -102,6 +100,8 @@ export default function WalletAssistant({
           wallet: walletSummary,
           dashboard: {
             activity,
+            activityStatus,
+            activityError,
             statCards,
             chainMetrics
           }
@@ -256,6 +256,20 @@ export default function WalletAssistant({
               <div className="assistant-context-row">
                 <span>Network</span>
                 <strong>{onArc ? "Arc Testnet" : "Not on Arc"}</strong>
+              </div>
+              <div className="assistant-context-row">
+                <span>Activity feed</span>
+                <strong>
+                  {activityStatus === "loading"
+                    ? "Loading..."
+                    : activityStatus === "refreshing"
+                      ? "Refreshing..."
+                      : activityStatus === "error"
+                        ? "Unavailable"
+                        : activity.length > 0
+                          ? `${activity.length} live events`
+                          : "No recent events"}
+                </strong>
               </div>
             </div>
           </div>

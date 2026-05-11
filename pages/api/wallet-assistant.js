@@ -68,7 +68,9 @@ export default async function handler(req, res) {
       {
         statCards: dashboard?.statCards || [],
         chainMetrics: dashboard?.chainMetrics || [],
-        activity: dashboard?.activity || []
+        activity: dashboard?.activity || [],
+        activityStatus: dashboard?.activityStatus || "unknown",
+        activityError: dashboard?.activityError || ""
       },
       null,
       2

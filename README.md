@@ -3,10 +3,10 @@
 A modern Next.js Arc wallet product with:
 
 - wallet connect
-- dark UI
+- Arc blue and black UI
 - AI wallet assistant
 - Arc Testnet contract integration
-- transaction analyzer
+- live onchain activity feed
 - responsive layout
 
 ## Stack
@@ -22,10 +22,8 @@ These versions were current on npm when I scaffolded this on `2026-05-10`.
 - `pages/index.js` contains the arc-ai-wallet homepage
 - `pages/_app.js` loads the global stylesheet
 - `pages/api/wallet-assistant.js` calls the OpenAI Responses API server-side
-- `pages/api/market-prices.js` fetches live token prices server-side
-- `pages/api/transaction-analyzer.js` fetches and explains Arc transactions
+- `pages/api/wallet-activity.js` fetches recent Arc wallet activity
 - `components/app-providers.jsx` wires RainbowKit, wagmi, and React Query
-- `components/transaction-analyzer.jsx` renders the plain-English transaction analyzer
 - `components/wallet-assistant.jsx` renders the AI wallet activity chatbox
 - `components/wallet-connect.jsx` contains the Arc wallet connect UI
 - `contracts/ArcAiWalletAssistant.sol` is the onchain assistant contract
@@ -34,10 +32,11 @@ These versions were current on npm when I scaffolded this on `2026-05-10`.
 - `lib/arc-chain.js` contains the Arc Testnet chain definition
 - `lib/arc-assistant-contract.js` contains the frontend contract ABI and helpers
 - `lib/use-arc-assistant-contract.js` reads and writes the assistant contract from the browser
+- `lib/wallet-activity.js` reads recent Arc wallet activity from RPC logs
+- `lib/use-arc-wallet-activity.js` polls the wallet activity feed in the browser
 - `lib/generated/arc-assistant-deployment.json` stores the deployed contract address used by the frontend
-- `lib/transaction-analyzer.js` decodes Arc transactions and common ERC-20 events
 - `lib/use-arc-wallet-snapshot.js` shares the live wallet address and USDC balance logic
-- `styles/globals.css` contains the dark responsive design system
+- `styles/globals.css` contains the Arc blue and black responsive design system
 
 ## Run
 
@@ -96,8 +95,7 @@ npm run dev
 - The wallet connect panel now uses `RainbowKit` with `wagmi`.
 - The displayed connected address is resolved with `ethers.js` and falls back to the wagmi account address if needed.
 - The dashboard fetches Arc Testnet USDC balance with `ethers.js` through the USDC ERC-20 interface at `0x3600000000000000000000000000000000000000`.
-- The wallet and market panel now fetch live BTC, ETH, SOL, and USDC prices from Coinbase market data APIs and refresh them every 30 seconds in the browser.
-- The transaction analyzer accepts an Arc transaction hash, fetches it from RPC, decodes common ERC-20 actions, and explains the result in plain English.
+- The activity feed reads recent Arc wallet transfers, approvals, and assistant saves directly from RPC logs.
 - The AI assistant sends wallet snapshot and recent dashboard activity to a server-side OpenAI Responses API route.
 - The onchain assistant contract stores a user's trimmed prompt/response pair and exposes the latest saved interaction per wallet.
 - The frontend assistant panel can save the latest AI answer on Arc Testnet once the contract is deployed and the wallet is connected to Arc.

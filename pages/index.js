@@ -1,23 +1,15 @@
 import Head from "next/head";
-import TransactionAnalyzer from "../components/transaction-analyzer";
 import WalletAssistant from "../components/wallet-assistant";
 import WalletConnect from "../components/wallet-connect";
-import {
-  formatMarketUpdatedAt,
-  formatPercentChange,
-  formatUsdPrice,
-  getLiveMarketPrices
-} from "../lib/market-prices";
-import { useMarketPrices } from "../lib/use-market-prices";
+import { useArcWalletActivity } from "../lib/use-arc-wallet-activity";
+import { useArcWalletSnapshot } from "../lib/use-arc-wallet-snapshot";
 
 const navItems = [
   { label: "Overview", id: "section-overview" },
   { label: "Wallet Hub", id: "section-wallet" },
   { label: "Treasury", id: "section-treasury" },
   { label: "Agents", id: "section-agents" },
-  { label: "Signals", id: "section-signals" },
   { label: "Activity", id: "section-activity" },
-  { label: "Analyzer", id: "section-analyzer" },
   { label: "Assistant", id: "section-assistant" }
 ];
 
@@ -53,34 +45,11 @@ const statCards = [
 ];
 
 const allocation = [
-  { label: "USDC", share: 42, color: "var(--accent-cyan)" },
-  { label: "BTC", share: 23, color: "var(--accent-gold)" },
-  { label: "ETH", share: 18, color: "var(--accent-green)" },
-  { label: "Yield", share: 11, color: "var(--accent-rose)" },
-  { label: "Experimental", share: 6, color: "var(--accent-steel)" }
-];
-
-const activity = [
-  {
-    title: "Treasury rebalanced into USDC",
-    meta: "2 minutes ago",
-    value: "$18,000 routed"
-  },
-  {
-    title: "Agent escrow funded on Arc",
-    meta: "18 minutes ago",
-    value: "12,500 USDC"
-  },
-  {
-    title: "Wallet session approved",
-    meta: "43 minutes ago",
-    value: "Arc Testnet"
-  },
-  {
-    title: "Yield vault alert triggered",
-    meta: "1 hour ago",
-    value: "APY dipped 0.8%"
-  }
+  { label: "USDC", share: 42, color: "var(--accent-secondary)" },
+  { label: "BTC", share: 23, color: "var(--accent-primary)" },
+  { label: "ETH", share: 18, color: "var(--accent-soft)" },
+  { label: "Yield", share: 11, color: "var(--accent-tertiary)" },
+  { label: "Experimental", share: 6, color: "#29476f" }
 ];
 
 const chainMetrics = [
@@ -107,8 +76,8 @@ function Sparkline({ points }) {
     <svg className="sparkline" viewBox="0 0 160 56" preserveAspectRatio="none" aria-hidden="true">
       <defs>
         <linearGradient id="spark-fill" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="rgba(74, 227, 181, 0.55)" />
-          <stop offset="100%" stopColor="rgba(74, 227, 181, 0)" />
+          <stop offset="0%" stopColor="rgba(53, 196, 255, 0.45)" />
+          <stop offset="100%" stopColor="rgba(53, 196, 255, 0)" />
         </linearGradient>
       </defs>
       <polyline points={`0,54 ${coordinates} 160,54`} fill="url(#spark-fill)" stroke="none" />
@@ -239,54 +208,20 @@ function ChainMonitor() {
   );
 }
 
-function MoversPanel({ marketData, status }) {
-  const assets = marketData?.assets || [];
+function ActivityPanel({ activity, activityStatus, activityError, isConnected }) {
   const chipText =
-    status === "loading"
-      ? "Refreshing prices..."
-      : marketData?.sourceStatus === "stale"
-        ? "Cached live prices"
-        : marketData?.updatedAt
-          ? `Updated ${formatMarketUpdatedAt(marketData.updatedAt)}`
-          : "Live feed unavailable";
+    !isConnected
+      ? "Connect wallet"
+      : activityStatus === "loading"
+        ? "Loading Arc activity..."
+        : activityStatus === "refreshing"
+          ? "Refreshing Arc activity..."
+          : activityStatus === "error"
+            ? "Activity unavailable"
+            : activity.length > 0
+              ? "Live onchain feed"
+              : "No recent events";
 
-  return (
-    <div className="panel section-card" id="section-signals">
-      <div className="section-header">
-        <div>
-          <p className="eyebrow">Signals</p>
-          <h2>Live token prices</h2>
-        </div>
-        <span className="section-chip">{chipText}</span>
-      </div>
-
-      <div className="movers-list">
-        {assets.map((asset) => (
-          <div key={asset.symbol} className="mover-row">
-            <div className="mover-symbol">{asset.symbol}</div>
-            <div className="mover-copy">
-              <strong>{asset.name}</strong>
-              <span>{formatUsdPrice(asset.priceUsd)}</span>
-            </div>
-            <span
-              className={
-                Number.isFinite(asset.change24h)
-                  ? asset.change24h < 0
-                    ? "delta negative"
-                    : "delta positive"
-                  : "delta"
-              }
-            >
-              {formatPercentChange(asset.change24h)}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ActivityPanel() {
   return (
     <div className="panel section-card" id="section-activity">
       <div className="section-header">
@@ -294,27 +229,64 @@ function ActivityPanel() {
           <p className="eyebrow">Recent Activity</p>
           <h2>Ops feed</h2>
         </div>
-        <span className="section-chip">Live queue</span>
+        <span className="section-chip">{chipText}</span>
       </div>
 
-      <div className="timeline">
-        {activity.map((event) => (
-          <div key={event.title} className="timeline-row">
-            <span className="timeline-dot" />
-            <div className="timeline-copy">
-              <strong>{event.title}</strong>
-              <span>{event.meta}</span>
-            </div>
-            <span className="timeline-value">{event.value}</span>
-          </div>
-        ))}
-      </div>
+      {!isConnected ? (
+        <div className="timeline-empty">
+          Connect your wallet and this panel will show real Arc Testnet transfers, approvals, and assistant saves for that address.
+        </div>
+      ) : activityStatus === "loading" && activity.length === 0 ? (
+        <div className="timeline-empty">
+          Loading recent Arc wallet activity from the RPC...
+        </div>
+      ) : activityError ? (
+        <div className="timeline-empty timeline-empty-error">{activityError}</div>
+      ) : activity.length === 0 ? (
+        <div className="timeline-empty">
+          No recent Arc wallet activity was found in the current onchain lookback window.
+        </div>
+      ) : (
+        <div className="timeline">
+          {activity.map((event) => {
+            const RowTag = event.explorerUrl ? "a" : "div";
+            const rowProps = event.explorerUrl
+              ? {
+                  href: event.explorerUrl,
+                  target: "_blank",
+                  rel: "noreferrer"
+                }
+              : {};
+
+            return (
+              <RowTag
+                key={event.id}
+                className={event.explorerUrl ? "timeline-row timeline-link-row" : "timeline-row"}
+                {...rowProps}
+              >
+                <span className="timeline-dot" />
+                <div className="timeline-copy">
+                  <strong>{event.title}</strong>
+                  <span>{event.meta}</span>
+                  {event.detail ? <span>{event.detail}</span> : null}
+                </div>
+                <span className="timeline-value">{event.value}</span>
+              </RowTag>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
-export default function Home({ assistantMode, initialMarketData }) {
-  const { marketData, status: marketStatus } = useMarketPrices(initialMarketData);
+export default function Home({ assistantMode }) {
+  const walletSnapshot = useArcWalletSnapshot();
+  const {
+    activity,
+    status: activityStatus,
+    error: activityError
+  } = useArcWalletActivity(walletSnapshot.address);
 
   return (
     <>
@@ -322,7 +294,7 @@ export default function Home({ assistantMode, initialMarketData }) {
         <title>arc-ai-wallet</title>
         <meta
           name="description"
-          content="arc-ai-wallet is a modern Arc Testnet wallet dashboard with AI assistance and transaction analysis."
+          content="arc-ai-wallet is a modern Arc Testnet wallet dashboard with Arc-native wallet tracking, AI assistance, and live onchain activity."
         />
       </Head>
 
@@ -333,20 +305,20 @@ export default function Home({ assistantMode, initialMarketData }) {
           <header className="hero panel" id="section-overview">
             <div className="hero-copy">
               <p className="eyebrow">Arc AI Wallet</p>
-              <h2>Track your Arc wallet, understand transactions, and get AI help from one dark command center.</h2>
+              <h2>Track your Arc wallet, review live onchain activity, and get AI help from one Arc-native command center.</h2>
               <p className="hero-text">
                 A polished Next.js product for Arc Testnet users who need wallet visibility,
-                USDC balance tracking, transaction explanations, and responsive AI-assisted monitoring.
+                USDC balance tracking, assistant memory onchain, and responsive AI-assisted monitoring.
               </p>
               <div className="hero-tags">
                 <span>Wallet Connect</span>
                 <span>AI Assistant</span>
-                <span>Arc Testnet</span>
+                <span>Onchain Activity</span>
               </div>
             </div>
 
             <div className="hero-side" id="section-wallet">
-              <WalletConnect marketData={marketData} />
+              <WalletConnect walletSnapshot={walletSnapshot} />
             </div>
           </header>
 
@@ -359,17 +331,22 @@ export default function Home({ assistantMode, initialMarketData }) {
           <section className="detail-grid">
             <AllocationChart />
             <ChainMonitor />
-            <MoversPanel marketData={marketData} status={marketStatus} />
-            <ActivityPanel />
+            <ActivityPanel
+              activity={activity}
+              activityStatus={activityStatus}
+              activityError={activityError}
+              isConnected={walletSnapshot.isConnected}
+            />
           </section>
-
-          <TransactionAnalyzer />
 
           <WalletAssistant
             activity={activity}
+            activityStatus={activityStatus}
+            activityError={activityError}
             statCards={statCards}
             chainMetrics={chainMetrics}
             assistantMode={assistantMode}
+            walletSnapshot={walletSnapshot}
           />
         </section>
       </main>
@@ -378,12 +355,9 @@ export default function Home({ assistantMode, initialMarketData }) {
 }
 
 export async function getStaticProps() {
-  const initialMarketData = await getLiveMarketPrices();
-
   return {
     props: {
-      assistantMode: process.env.OPENAI_API_KEY ? "openai" : "local",
-      initialMarketData
+      assistantMode: process.env.OPENAI_API_KEY ? "openai" : "local"
     },
     revalidate: 30
   };

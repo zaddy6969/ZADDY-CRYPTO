@@ -1,28 +1,25 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState } from "react";
 import {
-  formatMarketUpdatedAt,
-  formatPercentChange,
-  formatUsdPrice
-} from "../lib/market-prices";
-import {
   ARC_NETWORK_DETAILS,
   ARC_USDC_ERC20_ADDRESS,
   arcTestnet,
   hasWalletConnectProjectId
 } from "../lib/arc-chain";
-import { useArcWalletSnapshot } from "../lib/use-arc-wallet-snapshot";
 
 function truncateAddress(address) {
   if (!address) return "";
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-export default function WalletConnect({ marketData }) {
+export default function WalletConnect({ walletSnapshot }) {
   const [copied, setCopied] = useState(false);
-  const { address: displayAddress, usdcBalance, balanceStatus, balanceError } =
-    useArcWalletSnapshot();
-  const liveAssets = marketData?.assets || [];
+  const {
+    address: displayAddress,
+    usdcBalance,
+    balanceStatus,
+    balanceError
+  } = walletSnapshot || {};
 
   const handleCopy = async () => {
     if (!displayAddress) return;
@@ -80,7 +77,7 @@ export default function WalletConnect({ marketData }) {
             </div>
 
             <div className="wallet-balance-card">
-              <p>Connect with RainbowKit, use Arc Testnet, and display the signer address via ethers.js.</p>
+              <p>Connect with RainbowKit, switch to Arc Testnet, and keep your assistant tied to live Arc wallet state.</p>
 
               <div className="wallet-balance-stat">
                 <span>Arc USDC balance</span>
@@ -169,39 +166,6 @@ export default function WalletConnect({ marketData }) {
                   </a>
                 </div>
               ))}
-            </div>
-
-            <div className="wallet-market-panel">
-              <div className="wallet-topline wallet-market-head">
-                <span className="eyebrow">Live token prices</span>
-                <span className="section-chip">
-                  {marketData?.sourceStatus === "stale"
-                    ? "Using cached prices"
-                    : marketData?.updatedAt
-                      ? `Updated ${formatMarketUpdatedAt(marketData.updatedAt)}`
-                      : "Feed unavailable"}
-                </span>
-              </div>
-
-              <div className="wallet-market-grid">
-                {liveAssets.map((asset) => (
-                  <div key={asset.symbol} className="wallet-market-card">
-                    <span>{asset.symbol}</span>
-                    <strong>{formatUsdPrice(asset.priceUsd)}</strong>
-                    <em
-                      className={
-                        Number.isFinite(asset.change24h)
-                          ? asset.change24h < 0
-                            ? "delta negative wallet-market-change"
-                            : "delta positive wallet-market-change"
-                          : "wallet-market-change"
-                      }
-                    >
-                      {formatPercentChange(asset.change24h)}
-                    </em>
-                  </div>
-                ))}
-              </div>
             </div>
 
             {!hasWalletConnectProjectId ? (
