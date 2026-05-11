@@ -4,6 +4,9 @@ import WalletConnect from "../components/wallet-connect";
 import { useArcWalletActivity } from "../lib/use-arc-wallet-activity";
 import { useArcWalletSnapshot } from "../lib/use-arc-wallet-snapshot";
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://arc-ai-wallet.vercel.app";
+
 const navItems = [
   { label: "Overview", id: "section-overview" },
   { label: "Wallet Hub", id: "section-wallet" },
@@ -295,6 +298,22 @@ export default function Home({ assistantMode }) {
         <meta
           name="description"
           content="arc-ai-wallet is a modern Arc Testnet wallet dashboard with Arc-native wallet tracking, AI assistance, and live onchain activity."
+        />
+        <meta name="theme-color" content="#02050b" />
+        <link rel="canonical" href={SITE_URL} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="arc-ai-wallet" />
+        <meta property="og:title" content="arc-ai-wallet" />
+        <meta
+          property="og:description"
+          content="Arc Testnet wallet tracking, AI assistance, and live onchain activity from one Arc-native command center."
+        />
+        <meta property="og:url" content={SITE_URL} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="arc-ai-wallet" />
+        <meta
+          name="twitter:description"
+          content="Arc Testnet wallet tracking, AI assistance, and live onchain activity from one Arc-native command center."
         />
       </Head>
 

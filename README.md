@@ -9,6 +9,10 @@ A modern Next.js Arc wallet product with:
 - live onchain activity feed
 - responsive layout
 
+Target production URL:
+
+- `https://arc-ai-wallet.vercel.app`
+
 ## Stack
 
 - Next.js `15.5.9`
@@ -44,6 +48,7 @@ These versions were current on npm when I scaffolded this on `2026-05-10`.
 
 ```bash
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
+NEXT_PUBLIC_SITE_URL=https://arc-ai-wallet.vercel.app
 OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-5.4-mini
 ARC_TESTNET_RPC_URL=https://rpc.testnet.arc.network
