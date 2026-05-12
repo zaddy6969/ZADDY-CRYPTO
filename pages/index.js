@@ -346,8 +346,8 @@ function Footer() {
   return (
     <footer className="site-footer">
       <div>
-        <p className="eyebrow">Built By</p>
-        <strong>Zubair / Zaddy Crypto</strong>
+        <p className="eyebrow">Built On</p>
+        <strong>Arc</strong>
       </div>
       <div className="footer-links">
         <a href={GITHUB_URL} target="_blank" rel="noreferrer">
