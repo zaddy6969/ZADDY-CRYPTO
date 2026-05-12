@@ -230,11 +230,26 @@ button:disabled {
 .login-logo-stage::before {
   content: "";
   position: absolute;
-  inset: 14% 24%;
+  inset: 16% 24%;
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(87, 149, 255, 0.22), transparent 70%);
-  filter: blur(24px);
-  animation: logoPulse 4.8s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(87, 149, 255, 0.18), transparent 72%);
+  filter: blur(30px);
+  animation: logoAura 8s ease-in-out infinite;
+}
+
+.login-logo-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 16%,
+    rgba(113, 182, 255, 0.08) 38%,
+    transparent 62%
+  );
+  transform: translateX(-45%);
+  opacity: 0;
+  animation: logoSheen 1.35s ease 0.25s 1 forwards;
 }
 
 .login-logo-image {
@@ -243,8 +258,10 @@ button:disabled {
   width: min(100%, 540px);
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 28px 48px rgba(68, 127, 255, 0.18));
-  animation: logoFloat 5.4s ease-in-out infinite;
+  filter: drop-shadow(0 24px 44px rgba(68, 127, 255, 0.16));
+  opacity: 0;
+  transform: translateY(10px) scale(0.985);
+  animation: logoReveal 820ms cubic-bezier(0.2, 0.75, 0.2, 1) forwards;
 }
 
 .wallet-card {
@@ -494,25 +511,50 @@ button:disabled {
   }
 }
 
-@keyframes logoFloat {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
+@keyframes logoReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
   }
-  50% {
-    transform: translate3d(0, -8px, 0) scale(1.015);
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
-@keyframes logoPulse {
+@keyframes logoAura {
   0%,
   100% {
-    opacity: 0.55;
-    transform: scale(0.96);
+    opacity: 0.48;
+    transform: scale(0.98);
   }
   50% {
-    opacity: 0.95;
-    transform: scale(1.03);
+    opacity: 0.82;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes logoSheen {
+  0% {
+    opacity: 0;
+    transform: translateX(-45%);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(45%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-logo-stage::before,
+  .login-logo-stage::after,
+  .login-logo-image {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 
