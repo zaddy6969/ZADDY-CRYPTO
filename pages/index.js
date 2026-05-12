@@ -86,11 +86,16 @@ function LandingState() {
         </div>
       </div>
       <div className="login-logo-stage" aria-hidden="true">
-        <img
-          src="/arc-ai-wallet-logo.png"
-          alt=""
-          className="login-logo-image"
-        />
+        <span className="login-logo-orb login-logo-orb-left" />
+        <span className="login-logo-orb login-logo-orb-right" />
+        <span className="login-logo-ring" />
+        <div className="login-logo-shell">
+          <img
+            src="/arc-ai-wallet-logo.png"
+            alt=""
+            className="login-logo-image"
+          />
+        </div>
       </div>
       <div className="onboarding-grid">
         <div className="empty-state">
