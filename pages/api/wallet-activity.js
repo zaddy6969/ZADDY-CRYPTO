@@ -20,9 +20,9 @@ export default async function handler(req, res) {
     );
 
     return res.status(200).json({ activity });
-  } catch (error) {
-    return res.status(400).json({
-      error: error?.message || "Unable to load Arc wallet activity."
+  } catch {
+    return res.status(503).json({
+      error: "Activity temporarily unavailable. Please try again later."
     });
   }
 }

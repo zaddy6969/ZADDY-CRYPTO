@@ -1,24 +1,14 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState } from "react";
-import {
-  ARC_AI_WALLET_ASSISTANT_CONTRACT_ADDRESS,
-  buildAssistantExplorerUrl
-} from "../lib/arc-assistant-contract";
-import {
-  ARC_NETWORK_DETAILS,
-  ARC_USDC_ERC20_ADDRESS,
-  arcTestnet
-} from "../lib/arc-chain";
+import { ARC_TESTNET_INFO_ITEMS, arcTestnet } from "../lib/arc-chain";
 
 function truncateAddress(address) {
-  if (!address) return "";
+  if (!address) {
+    return "";
+  }
+
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
-
-const assistantContractUrl = buildAssistantExplorerUrl(
-  ARC_AI_WALLET_ASSISTANT_CONTRACT_ADDRESS,
-  "address"
-);
 
 export function WalletConnectCta({ className = "hero-actions" }) {
   return (
@@ -41,7 +31,7 @@ export function WalletConnectCta({ className = "hero-actions" }) {
             authenticationStatus === "authenticated");
         const onArc = chain?.id === arcTestnet.id;
 
-        const handlePrimaryClick = () => {
+        const handleClick = () => {
           if (!connected) {
             openConnectModal();
             return;
@@ -59,26 +49,16 @@ export function WalletConnectCta({ className = "hero-actions" }) {
           <div className={className}>
             <button
               type="button"
-              className="primary-button"
-              onClick={handlePrimaryClick}
+              className="button button-primary"
               disabled={!ready}
+              onClick={handleClick}
             >
               {!connected
                 ? "Connect Wallet"
                 : !onArc
-                  ? "Switch to Arc"
-                  : "Manage Wallet"}
+                  ? "Switch to Arc Testnet"
+                  : "Open Wallet"}
             </button>
-            {assistantContractUrl ? (
-              <a
-                className="ghost-button"
-                href={assistantContractUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                View Contract on ArcScan
-              </a>
-            ) : null}
           </div>
         );
       }}
@@ -89,19 +69,23 @@ export function WalletConnectCta({ className = "hero-actions" }) {
 export default function WalletConnect({ walletSnapshot }) {
   const [copied, setCopied] = useState(false);
   const {
-    address: displayAddress,
+    address,
+    isSignedIn,
+    onArc,
     usdcBalance,
     balanceStatus,
-    balanceError
+    disconnectWallet
   } = walletSnapshot || {};
 
   const handleCopy = async () => {
-    if (!displayAddress) return;
+    if (!address) {
+      return;
+    }
 
     try {
-      await navigator.clipboard.writeText(displayAddress);
+      await navigator.clipboard.writeText(address);
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      window.setTimeout(() => setCopied(false), 1500);
     } catch {}
   };
 
@@ -112,7 +96,6 @@ export default function WalletConnect({ walletSnapshot }) {
         authenticationStatus,
         chain,
         mounted,
-        openAccountModal,
         openChainModal,
         openConnectModal
       }) => {
@@ -123,143 +106,120 @@ export default function WalletConnect({ walletSnapshot }) {
           chain &&
           (!authenticationStatus ||
             authenticationStatus === "authenticated");
-        const onArc = chain?.id === arcTestnet.id;
+        const arcReady = chain?.id === arcTestnet.id;
 
         return (
-          <div
-            className="wallet-panel"
-            {...(!ready && {
-              "aria-hidden": true,
-              style: {
-                opacity: 0,
-                pointerEvents: "none",
-                userSelect: "none"
-              }
-            })}
-          >
-            <div className="wallet-topline">
-              <span className="eyebrow">RainbowKit Wallet</span>
+          <section className="card wallet-card" id="section-wallet">
+            <div className="section-heading">
+              <div>
+                <p className="section-kicker">Connect Wallet</p>
+                <h2>Wallet login and network status</h2>
+              </div>
               <span
                 className={
-                  connected && onArc
-                    ? "status-pill connected"
-                    : "status-pill pending"
+                  connected && arcReady ? "status-badge status-good" : "status-badge"
                 }
               >
-                {connected ? (onArc ? "Arc Ready" : "Wrong Network") : "Disconnected"}
+                {!connected
+                  ? "Not connected"
+                  : arcReady
+                    ? "Signed in with wallet"
+                    : "Wrong network"}
               </span>
             </div>
 
-            <div className="wallet-balance-card">
-              <p>
-                Connect your wallet to load live Arc USDC balance, recent
-                activity, and onchain assistant actions from the correct
-                network.
-              </p>
-
-              <div className="wallet-balance-stat">
-                <span>Arc USDC balance</span>
-                <strong>
-                  {!connected
-                    ? "Connect wallet"
-                    : balanceStatus === "loading"
-                      ? "Loading..."
-                      : balanceStatus === "error"
-                        ? "Unavailable"
-                        : usdcBalance || "0.00 USDC"}
-                </strong>
+            {!connected ? (
+              <div className="empty-state">
+                <strong>Connect wallet to continue.</strong>
+                <p>
+                  Use your wallet to sign in and unlock portfolio balances,
+                  recent Arc activity, and AI wallet assistance.
+                </p>
+                <button
+                  type="button"
+                  className="button button-primary"
+                  onClick={openConnectModal}
+                >
+                  Connect Wallet
+                </button>
               </div>
-
-              {!connected ? (
-                <div className="wallet-cta-row">
-                  <button
-                    type="button"
-                    className="primary-button"
-                    onClick={openConnectModal}
-                  >
-                    Connect Wallet
-                  </button>
-                  {assistantContractUrl ? (
-                    <a
-                      className="ghost-button"
-                      href={assistantContractUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      View Contract on ArcScan
-                    </a>
-                  ) : null}
+            ) : (
+              <>
+                <div className="wallet-summary-grid">
+                  <div className="wallet-summary-item">
+                    <span className="field-label">Wallet address</span>
+                    <strong>{address || account.address}</strong>
+                  </div>
+                  <div className="wallet-summary-item">
+                    <span className="field-label">Network</span>
+                    <strong>{arcReady ? "Arc Testnet" : chain?.name || "Unknown"}</strong>
+                  </div>
+                  <div className="wallet-summary-item">
+                    <span className="field-label">Network status</span>
+                    <strong>{arcReady ? "Arc ready" : "Switch to Arc Testnet"}</strong>
+                  </div>
+                  <div className="wallet-summary-item">
+                    <span className="field-label">USDC balance</span>
+                    <strong>
+                      {balanceStatus === "loading"
+                        ? "Loading..."
+                        : balanceStatus === "ready"
+                          ? usdcBalance
+                          : "Unavailable"}
+                    </strong>
+                  </div>
                 </div>
-              ) : (
-                <div className="wallet-address-row">
+
+                <div className="wallet-actions">
                   <button
                     type="button"
-                    className="address-chip"
+                    className="button button-secondary"
                     onClick={handleCopy}
-                    title={displayAddress}
                   >
-                    {copied ? "Copied" : truncateAddress(displayAddress || account.address)}
+                    {copied ? "Copied" : `Copy ${truncateAddress(address || account.address)}`}
                   </button>
                   {!onArc ? (
                     <button
                       type="button"
-                      className="ghost-button"
+                      className="button button-primary"
                       onClick={openChainModal}
                     >
-                      Switch to Arc
+                      Switch to Arc Testnet
                     </button>
                   ) : null}
                   <button
                     type="button"
-                    className="ghost-button"
-                    onClick={openAccountModal}
+                    className="button button-secondary"
+                    onClick={() => disconnectWallet?.()}
                   >
-                    Manage
+                    Disconnect
                   </button>
                 </div>
-              )}
-            </div>
 
-            <div className="wallet-meta">
-              <div className="wallet-meta-row">
-                <span>Target network</span>
-                <strong>{arcTestnet.name}</strong>
-              </div>
-              <div className="wallet-meta-row">
-                <span>Chain ID</span>
-                <strong>{arcTestnet.id}</strong>
-              </div>
-              <div className="wallet-meta-row">
-                <span>Native gas</span>
-                <strong>{arcTestnet.nativeCurrency.symbol}</strong>
-              </div>
-              <div className="wallet-meta-row">
-                <span>Connected address</span>
-                <strong className="wallet-address-text">
-                  {connected ? displayAddress || account.address : "Not connected"}
-                </strong>
-              </div>
-              <div className="wallet-meta-row">
-                <span>USDC contract</span>
-                <strong className="wallet-address-text">
-                  {ARC_USDC_ERC20_ADDRESS}
-                </strong>
-              </div>
-            </div>
+                {isSignedIn ? (
+                  <p className="helper-copy">
+                    Signed in with wallet. The dashboard below is protected by
+                    your active wallet connection.
+                  </p>
+                ) : null}
+              </>
+            )}
 
-            <div className="wallet-meta">
-              {ARC_NETWORK_DETAILS.map((item) => (
-                <div key={item.label} className="wallet-meta-row">
-                  <span>{item.label}</span>
-                  <a className="wallet-link" href={item.value} target="_blank" rel="noreferrer">
-                    {item.value.replace(/^https?:\/\//, "")}
-                  </a>
+            <div className="network-facts-grid">
+              {ARC_TESTNET_INFO_ITEMS.map((item) => (
+                <div key={item.label} className="network-fact">
+                  <span className="field-label">{item.label}</span>
+                  {item.href ? (
+                    <a href={item.href} target="_blank" rel="noreferrer">
+                      {item.value}
+                    </a>
+                  ) : (
+                    <strong>{item.value}</strong>
+                  )}
                 </div>
               ))}
             </div>
-
-            {balanceError ? <p className="wallet-error">{balanceError}</p> : null}
-          </div>
+          </section>
         );
       }}
     </ConnectButton.Custom>
