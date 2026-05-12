@@ -1,28 +1,36 @@
+function shortenValue(value) {
+  if (!value || value.length < 14) {
+    return value || "";
+  }
+
+  return `${value.slice(0, 8)}...${value.slice(-6)}`;
+}
+
 function ActivityRow({ item }) {
   return (
-    <div className="activity-row">
-      <div>
-        <strong>{item.type}</strong>
-        <span>{item.summary}</span>
+    <article className="activity-card">
+      <div className="activity-card-head">
+        <div className="activity-card-copy">
+          <strong>{item.type}</strong>
+          <span>{item.summary}</span>
+        </div>
+        <div className="activity-card-amount">
+          <strong>{item.amount || "Tracked event"}</strong>
+          <span>{item.token || "Contract activity"}</span>
+        </div>
       </div>
-      <div>
-        <strong>{item.token || "Contract"}</strong>
-        <span>{item.contract}</span>
-      </div>
-      <div>
-        <strong>{item.amount || "N/A"}</strong>
-        <span>Block {item.blockNumber}</span>
-      </div>
-      <div>
-        <strong>{item.txHashShort}</strong>
+      <div className="activity-card-meta">
         <span>{item.timeLabel}</span>
+        <span>Block {item.blockNumber}</span>
+        <span>{item.txHashShort}</span>
       </div>
-      <div className="activity-link-cell">
+      <div className="activity-card-footer">
+        <span>{shortenValue(item.contract)}</span>
         <a href={item.explorerUrl} target="_blank" rel="noreferrer">
           View on ArcScan
         </a>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -36,8 +44,8 @@ export default function TransactionActivity({
     <section className="card" id="section-activity">
       <div className="section-heading">
         <div>
-          <p className="section-kicker">Transaction Activity</p>
-          <h2>Latest Arc wallet activity</h2>
+          <p className="section-kicker">Wallet Feed</p>
+          <h2>Recent Arc wallet activity</h2>
         </div>
         <span className="status-badge">
           {!isSignedIn
@@ -46,7 +54,7 @@ export default function TransactionActivity({
               ? "Loading"
               : status === "error"
                 ? "Unavailable"
-                : `${activity.length} items`}
+                : `${activity.length} events`}
         </span>
       </div>
 
@@ -74,7 +82,7 @@ export default function TransactionActivity({
           <p>No supported Arc activity was found in the latest safe lookback window.</p>
         </div>
       ) : (
-        <div className="activity-list">
+        <div className="activity-feed">
           {activity.map((item) => (
             <ActivityRow key={item.id} item={item} />
           ))}

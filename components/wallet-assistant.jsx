@@ -28,14 +28,12 @@ export default function WalletAssistant({
     {
       role: "assistant",
       content:
-        "Ask about your wallet activity and I will keep the answer short, practical, and grounded in the current Arc dashboard data."
+        "Ask one question about your wallet and I will answer from your latest Arc balances and activity."
     }
   ]);
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
-  const [notice, setNotice] = useState(
-    "The assistant reads your connected wallet, supported balances, and recent Arc activity."
-  );
+  const [notice, setNotice] = useState("Wallet Copilot Ready");
   const [error, setError] = useState("");
 
   const assistantContext = useMemo(
@@ -92,7 +90,7 @@ export default function WalletAssistant({
         throw new Error("AI assistant temporarily unavailable.");
       }
 
-      setNotice(payload.notice || "");
+      setNotice(payload.notice || "Wallet Copilot Ready");
       setMessages((current) => [
         ...current,
         {
@@ -118,8 +116,8 @@ export default function WalletAssistant({
     <section className="card" id="section-assistant">
       <div className="section-heading">
         <div>
-          <p className="section-kicker">AI Assistant</p>
-          <h2>Simple wallet guidance</h2>
+          <p className="section-kicker">Wallet Copilot</p>
+          <h2>Your main Arc wallet workspace</h2>
         </div>
         <span className="status-badge">
           {loading ? "Thinking" : "Ready"}
@@ -169,7 +167,7 @@ export default function WalletAssistant({
         />
         <div className="assistant-form-row">
           <span className="helper-copy">
-            Keep questions simple for the best Arc wallet summary.
+            Ask short questions like "Summarize wallet" or "Risk check".
           </span>
           <button
             type="submit"

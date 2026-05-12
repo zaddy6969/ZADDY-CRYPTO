@@ -103,7 +103,7 @@ button:disabled {
   margin: 0;
   max-width: 44rem;
   color: var(--muted);
-  font-size: 1rem;
+  font-size: 1.03rem;
   line-height: 1.75;
 }
 
@@ -158,6 +158,36 @@ button:disabled {
   display: grid;
   gap: 18px;
   padding: 24px;
+}
+
+.onboarding-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 16px;
+}
+
+.onboarding-list {
+  display: grid;
+  gap: 12px;
+}
+
+.onboarding-item {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.onboarding-item strong {
+  font-size: 1rem;
+}
+
+.onboarding-item p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
 }
 
 .button {
@@ -502,6 +532,56 @@ button:disabled {
   text-underline-offset: 4px;
 }
 
+.activity-feed {
+  display: grid;
+  gap: 14px;
+}
+
+.activity-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.activity-card-head,
+.activity-card-footer,
+.activity-card-meta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.activity-card-copy,
+.activity-card-amount {
+  display: grid;
+  gap: 6px;
+}
+
+.activity-card-copy strong,
+.activity-card-amount strong {
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.activity-card-copy span,
+.activity-card-amount span,
+.activity-card-meta span,
+.activity-card-footer span {
+  color: var(--muted);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.activity-card-footer a {
+  color: #dce7ff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 @keyframes shimmer {
   0% {
     background-position: 200% 0;
@@ -559,6 +639,7 @@ button:disabled {
 }
 
 @media (max-width: 900px) {
+  .onboarding-grid,
   .wallet-summary-grid,
   .portfolio-summary-grid,
   .network-facts-grid,
@@ -567,6 +648,9 @@ button:disabled {
   }
 
   .assistant-form-row,
+  .activity-card-head,
+  .activity-card-footer,
+  .activity-card-meta,
   .site-footer,
   .section-heading {
     flex-direction: column;

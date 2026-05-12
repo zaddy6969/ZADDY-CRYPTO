@@ -44,7 +44,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       answer: localAnswer,
       mode: "local",
-      notice: "Using built-in wallet insights for this response."
+      notice: "Wallet Copilot Ready"
     });
   }
 
@@ -88,7 +88,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         answer: localAnswer,
         mode: "local",
-        notice: "Using built-in wallet insights for this response."
+        notice: "Wallet Copilot Ready"
       });
     }
 
@@ -98,20 +98,20 @@ export default async function handler(req, res) {
       return res.status(200).json({
         answer: localAnswer,
         mode: "local",
-        notice: "Using built-in wallet insights for this response."
+        notice: "Wallet Copilot Ready"
       });
     }
 
     return res.status(200).json({
       answer,
       mode: "openai",
-      notice: "OpenAI is active for this response."
+      notice: "Wallet Copilot Ready"
     });
   } catch {
     return res.status(200).json({
       answer: localAnswer,
       mode: "local",
-      notice: "Using built-in wallet insights for this response."
+      notice: "Wallet Copilot Ready"
     });
   }
 }

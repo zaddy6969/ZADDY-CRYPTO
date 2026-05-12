@@ -15,6 +15,7 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://arc-ai-wallet.vercel.app";
 
 const GITHUB_URL = "https://github.com/zaddy6969/ZADDY-CRYPTO";
+const X_URL = "https://x.com/zaddy6969";
 const ARC_DOCS_URL = "https://docs.arc.network/";
 const CONTRACT_URL = `${arcTestnet.blockExplorers.default.url}/address/${assistantDeployment.address}`;
 
@@ -26,6 +27,9 @@ function Footer() {
         <strong>Build on Arc</strong>
       </div>
       <div className="footer-links">
+        <a href={X_URL} target="_blank" rel="noreferrer">
+          X
+        </a>
         <a href={GITHUB_URL} target="_blank" rel="noreferrer">
           GitHub
         </a>
@@ -50,7 +54,7 @@ function Hero({ isSignedIn }) {
       <p className="section-kicker">Arc AI Wallet</p>
       <h1>Arc AI Wallet</h1>
       <p className="hero-subtitle">
-        Simple AI-powered wallet dashboard for Arc Testnet.
+        AI-powered wallet intelligence built on Arc.
       </p>
       <div className="hero-meta">
         <span>Arc Testnet</span>
@@ -77,8 +81,8 @@ function LandingState() {
     <section className="card">
       <div className="section-heading">
         <div>
-          <p className="section-kicker">Login</p>
-          <h2>Connect wallet to open the dashboard</h2>
+          <p className="section-kicker">Onboarding</p>
+          <h2>Start with one wallet connection</h2>
         </div>
       </div>
       <div className="login-logo-stage" aria-hidden="true">
@@ -88,13 +92,32 @@ function LandingState() {
           className="login-logo-image"
         />
       </div>
-      <div className="empty-state">
-        <strong>Connect wallet to sign in.</strong>
-        <p>
-          After wallet connection, the dashboard unlocks real portfolio
-          balances, recent Arc activity, and AI wallet analysis.
-        </p>
-        <WalletConnectCta className="hero-actions" />
+      <div className="onboarding-grid">
+        <div className="empty-state">
+          <strong>Connect wallet to sign in.</strong>
+          <p>
+            Arc AI Wallet turns balances, transfers, and approvals into clear
+            wallet guidance as soon as you connect.
+          </p>
+          <WalletConnectCta className="hero-actions" />
+        </div>
+        <div className="onboarding-list">
+          <div className="onboarding-item">
+            <span className="field-label">01</span>
+            <strong>Connect your Arc wallet</strong>
+            <p>Use RainbowKit to sign in and switch to Arc Testnet.</p>
+          </div>
+          <div className="onboarding-item">
+            <span className="field-label">02</span>
+            <strong>Review live wallet activity</strong>
+            <p>See recent transfers and approvals in a clean, readable feed.</p>
+          </div>
+          <div className="onboarding-item">
+            <span className="field-label">03</span>
+            <strong>Ask your wallet copilot</strong>
+            <p>Get short AI answers about risk, balances, and recent activity.</p>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -113,26 +136,26 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Arc AI Wallet</title>
+        <title>Arc AI Wallet | Built on Arc</title>
         <meta
           name="description"
-          content="Simple AI-powered wallet dashboard for Arc Testnet."
+          content="AI-powered wallet intelligence built on Arc."
         />
         <meta name="theme-color" content="#070b14" />
         <link rel="canonical" href={SITE_URL} />
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Arc AI Wallet" />
-        <meta property="og:title" content="Arc AI Wallet" />
+        <meta property="og:site_name" content="Arc AI Wallet | Built on Arc" />
+        <meta property="og:title" content="Arc AI Wallet | Built on Arc" />
         <meta
           property="og:description"
-          content="Simple AI-powered wallet dashboard for Arc Testnet."
+          content="AI-powered wallet intelligence built on Arc."
         />
         <meta property="og:url" content={SITE_URL} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Arc AI Wallet" />
+        <meta name="twitter:title" content="Arc AI Wallet | Built on Arc" />
         <meta
           name="twitter:description"
-          content="Simple AI-powered wallet dashboard for Arc Testnet."
+          content="AI-powered wallet intelligence built on Arc."
         />
       </Head>
 
@@ -147,6 +170,12 @@ export default function Home() {
             </>
           ) : (
             <>
+              <WalletAssistant
+                walletSnapshot={walletSnapshot}
+                portfolio={portfolio}
+                activity={activity}
+                activityStatus={activityStatus}
+              />
               <WalletConnect walletSnapshot={walletSnapshot} />
               <PortfolioSummary
                 walletSnapshot={walletSnapshot}
@@ -157,12 +186,6 @@ export default function Home() {
                 activity={activity}
                 status={activityStatus}
                 error={activityError}
-              />
-              <WalletAssistant
-                walletSnapshot={walletSnapshot}
-                portfolio={portfolio}
-                activity={activity}
-                activityStatus={activityStatus}
               />
               <Footer />
             </>
