@@ -22,8 +22,8 @@ function Footer() {
   return (
     <footer className="site-footer">
       <div>
-        <p className="section-kicker">Built by</p>
-        <strong>Zubair / Zaddy Crypto</strong>
+        <p className="section-kicker">Ecosystem</p>
+        <strong>Build on Arc</strong>
       </div>
       <div className="footer-links">
         <a href={GITHUB_URL} target="_blank" rel="noreferrer">
@@ -80,6 +80,13 @@ function LandingState() {
           <p className="section-kicker">Login</p>
           <h2>Connect wallet to open the dashboard</h2>
         </div>
+      </div>
+      <div className="login-logo-stage" aria-hidden="true">
+        <img
+          src="/arc-ai-wallet-logo.png"
+          alt=""
+          className="login-logo-image"
+        />
       </div>
       <div className="empty-state">
         <strong>Connect wallet to sign in.</strong>
