@@ -15,7 +15,7 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://arc-ai-wallet.vercel.app";
 
 const GITHUB_URL = "https://github.com/zaddy6969/ZADDY-CRYPTO";
-const X_URL = "https://x.com/zaddy6969";
+const X_URL = "https://x.com/ARC_AI_WALLET";
 const ARC_DOCS_URL = "https://docs.arc.network/";
 const CONTRACT_URL = `${arcTestnet.blockExplorers.default.url}/address/${assistantDeployment.address}`;
 
