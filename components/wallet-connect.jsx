@@ -1,15 +1,89 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState } from "react";
 import {
+  ARC_AI_WALLET_ASSISTANT_CONTRACT_ADDRESS,
+  buildAssistantExplorerUrl
+} from "../lib/arc-assistant-contract";
+import {
   ARC_NETWORK_DETAILS,
   ARC_USDC_ERC20_ADDRESS,
-  arcTestnet,
-  hasWalletConnectProjectId
+  arcTestnet
 } from "../lib/arc-chain";
 
 function truncateAddress(address) {
   if (!address) return "";
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+const assistantContractUrl = buildAssistantExplorerUrl(
+  ARC_AI_WALLET_ASSISTANT_CONTRACT_ADDRESS,
+  "address"
+);
+
+export function WalletConnectCta({ className = "hero-actions" }) {
+  return (
+    <ConnectButton.Custom>
+      {({
+        account,
+        authenticationStatus,
+        chain,
+        mounted,
+        openAccountModal,
+        openChainModal,
+        openConnectModal
+      }) => {
+        const ready = mounted && authenticationStatus !== "loading";
+        const connected =
+          ready &&
+          account &&
+          chain &&
+          (!authenticationStatus ||
+            authenticationStatus === "authenticated");
+        const onArc = chain?.id === arcTestnet.id;
+
+        const handlePrimaryClick = () => {
+          if (!connected) {
+            openConnectModal();
+            return;
+          }
+
+          if (!onArc) {
+            openChainModal();
+            return;
+          }
+
+          openAccountModal();
+        };
+
+        return (
+          <div className={className}>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={handlePrimaryClick}
+              disabled={!ready}
+            >
+              {!connected
+                ? "Connect Wallet"
+                : !onArc
+                  ? "Switch to Arc"
+                  : "Manage Wallet"}
+            </button>
+            {assistantContractUrl ? (
+              <a
+                className="ghost-button"
+                href={assistantContractUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                View Contract on ArcScan
+              </a>
+            ) : null}
+          </div>
+        );
+      }}
+    </ConnectButton.Custom>
+  );
 }
 
 export default function WalletConnect({ walletSnapshot }) {
@@ -77,7 +151,11 @@ export default function WalletConnect({ walletSnapshot }) {
             </div>
 
             <div className="wallet-balance-card">
-              <p>Connect with RainbowKit, switch to Arc Testnet, and keep your assistant tied to live Arc wallet state.</p>
+              <p>
+                Connect your wallet to load live Arc USDC balance, recent
+                activity, and onchain assistant actions from the correct
+                network.
+              </p>
 
               <div className="wallet-balance-stat">
                 <span>Arc USDC balance</span>
@@ -93,13 +171,25 @@ export default function WalletConnect({ walletSnapshot }) {
               </div>
 
               {!connected ? (
-                <button
-                  type="button"
-                  className="primary-button"
-                  onClick={openConnectModal}
-                >
-                  Connect Wallet
-                </button>
+                <div className="wallet-cta-row">
+                  <button
+                    type="button"
+                    className="primary-button"
+                    onClick={openConnectModal}
+                  >
+                    Connect Wallet
+                  </button>
+                  {assistantContractUrl ? (
+                    <a
+                      className="ghost-button"
+                      href={assistantContractUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View Contract on ArcScan
+                    </a>
+                  ) : null}
+                </div>
               ) : (
                 <div className="wallet-address-row">
                   <button
@@ -167,12 +257,6 @@ export default function WalletConnect({ walletSnapshot }) {
                 </div>
               ))}
             </div>
-
-            {!hasWalletConnectProjectId ? (
-              <p className="wallet-error">
-                Set <code>NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID</code> in your environment variables for full WalletConnect support on local and deployed builds.
-              </p>
-            ) : null}
 
             {balanceError ? <p className="wallet-error">{balanceError}</p> : null}
           </div>

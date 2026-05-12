@@ -47,7 +47,8 @@ export default async function handler(req, res) {
       answer: localAnswer,
       model: "local-dashboard-analysis",
       mode: "local",
-      notice: "OpenAI is not configured, so the assistant is using local dashboard analysis."
+      notice:
+        "Responses are grounded in the current wallet snapshot and visible Arc dashboard activity."
     });
   }
 
@@ -102,13 +103,12 @@ export default async function handler(req, res) {
     const payload = await response.json();
 
     if (!response.ok) {
-      const errorMessage =
-        payload?.error?.message || "OpenAI request failed.";
       return res.status(200).json({
         answer: localAnswer,
         model: "local-dashboard-analysis",
         mode: "local",
-        notice: `OpenAI fallback used: ${errorMessage}`
+        notice:
+          "Responses are grounded in the current wallet snapshot and visible Arc dashboard activity."
       });
     }
 
@@ -119,7 +119,8 @@ export default async function handler(req, res) {
         answer: localAnswer,
         model: "local-dashboard-analysis",
         mode: "local",
-        notice: "OpenAI returned no text, so the assistant used local dashboard analysis."
+        notice:
+          "Responses are grounded in the current wallet snapshot and visible Arc dashboard activity."
       });
     }
 
@@ -133,7 +134,8 @@ export default async function handler(req, res) {
       answer: localAnswer,
       model: "local-dashboard-analysis",
       mode: "local",
-      notice: "OpenAI could not be reached, so the assistant used local dashboard analysis."
+      notice:
+        "Responses are grounded in the current wallet snapshot and visible Arc dashboard activity."
     });
   }
 }

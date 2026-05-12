@@ -1,92 +1,115 @@
 import Head from "next/head";
-import WalletAssistant from "../components/wallet-assistant";
-import WalletConnect from "../components/wallet-connect";
+import {
+  ARC_TESTNET_INFO_ITEMS,
+  arcTestnet
+} from "../lib/arc-chain";
 import { useArcWalletActivity } from "../lib/use-arc-wallet-activity";
 import { useArcWalletSnapshot } from "../lib/use-arc-wallet-snapshot";
+import WalletAssistant from "../components/wallet-assistant";
+import WalletConnect, {
+  WalletConnectCta
+} from "../components/wallet-connect";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://arc-ai-wallet.vercel.app";
 
+const GITHUB_URL = "https://github.com/zaddy6969/ZADDY-CRYPTO";
+const ARC_DOCS_URL = "https://docs.arc.network/";
+
 const navItems = [
   { label: "Overview", id: "section-overview" },
-  { label: "Wallet Hub", id: "section-wallet" },
-  { label: "Treasury", id: "section-treasury" },
-  { label: "Agents", id: "section-agents" },
+  { label: "Wallet", id: "section-wallet" },
+  { label: "Readiness", id: "section-readiness" },
+  { label: "Arc Info", id: "section-arc" },
   { label: "Activity", id: "section-activity" },
   { label: "Assistant", id: "section-assistant" }
 ];
 
-const statCards = [
-  {
-    label: "Portfolio Value",
-    value: "$482,190",
-    change: "+12.4%",
-    tone: "positive",
-    points: [18, 28, 26, 34, 38, 48, 52]
-  },
-  {
-    label: "Stable Liquidity",
-    value: "$184,200",
-    change: "+4.7%",
-    tone: "positive",
-    points: [20, 18, 22, 24, 28, 30, 34]
-  },
-  {
-    label: "Gas Runway",
-    value: "44.8 days",
-    change: "-1.2%",
-    tone: "warning",
-    points: [40, 42, 39, 37, 34, 33, 31]
-  },
-  {
-    label: "Active Strategies",
-    value: "7 live",
-    change: "2 pending",
-    tone: "neutral",
-    points: [12, 18, 24, 22, 30, 34, 40]
-  }
-];
-
-const allocation = [
-  { label: "USDC", share: 42, color: "var(--accent-secondary)" },
-  { label: "BTC", share: 23, color: "var(--accent-primary)" },
-  { label: "ETH", share: 18, color: "var(--accent-soft)" },
-  { label: "Yield", share: 11, color: "var(--accent-tertiary)" },
-  { label: "Experimental", share: 6, color: "#29476f" }
-];
-
 const chainMetrics = [
-  { label: "Network", value: "Arc Testnet" },
-  { label: "Chain ID", value: "5042002" },
-  { label: "Gas Asset", value: "USDC" },
-  { label: "RPC", value: "rpc.testnet.arc.network" }
+  { label: "Network", value: arcTestnet.name },
+  { label: "Chain ID", value: String(arcTestnet.id) },
+  { label: "Gas Asset", value: arcTestnet.nativeCurrency.symbol },
+  { label: "RPC", value: arcTestnet.rpcUrls.default.http[0] }
 ];
 
-function Sparkline({ points }) {
-  const max = Math.max(...points);
-  const min = Math.min(...points);
-  const range = max - min || 1;
-  const step = 160 / (points.length - 1);
-  const coordinates = points
-    .map((point, index) => {
-      const x = index * step;
-      const y = 50 - ((point - min) / range) * 34;
-      return `${x},${y}`;
-    })
-    .join(" ");
+function buildOverviewCards(walletSnapshot, activity, activityStatus) {
+  const {
+    isConnected,
+    onArc,
+    usdcBalance,
+    balanceStatus
+  } = walletSnapshot || {};
 
-  return (
-    <svg className="sparkline" viewBox="0 0 160 56" preserveAspectRatio="none" aria-hidden="true">
-      <defs>
-        <linearGradient id="spark-fill" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="rgba(53, 196, 255, 0.45)" />
-          <stop offset="100%" stopColor="rgba(53, 196, 255, 0)" />
-        </linearGradient>
-      </defs>
-      <polyline points={`0,54 ${coordinates} 160,54`} fill="url(#spark-fill)" stroke="none" />
-      <polyline points={coordinates} fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+  const activityCount = Array.isArray(activity) ? activity.length : 0;
+
+  return [
+    {
+      label: "Wallet Status",
+      value: isConnected ? "Connected" : "Connect to begin",
+      change: isConnected ? "Live wallet context unlocked" : "Placeholder state",
+      tone: isConnected ? "positive" : "neutral",
+      placeholder: !isConnected
+    },
+    {
+      label: "Network",
+      value: !isConnected
+        ? "Waiting for wallet"
+        : onArc
+          ? "Arc Testnet"
+          : "Switch required",
+      change: !isConnected
+        ? "Arc-ready once connected"
+        : onArc
+          ? "Correct chain detected"
+          : "Move to Arc Testnet",
+      tone: !isConnected ? "neutral" : onArc ? "positive" : "warning",
+      placeholder: !isConnected
+    },
+    {
+      label: "Arc USDC",
+      value: !isConnected
+        ? "--"
+        : balanceStatus === "loading"
+          ? "Loading..."
+          : balanceStatus === "error"
+            ? "Unavailable"
+            : usdcBalance || "0.00 USDC",
+      change: !isConnected
+        ? "Balance appears after connection"
+        : "Arc gas uses native USDC",
+      tone:
+        !isConnected || balanceStatus === "loading"
+          ? "neutral"
+          : balanceStatus === "error"
+            ? "warning"
+            : "positive",
+      placeholder: !isConnected
+    },
+    {
+      label: "Activity Feed",
+      value: !isConnected
+        ? "--"
+        : activityStatus === "loading" || activityStatus === "refreshing"
+          ? "Syncing..."
+          : activityStatus === "error"
+            ? "Unavailable"
+            : activityCount > 0
+              ? `${activityCount} recent events`
+              : "No recent events",
+      change: !isConnected
+        ? "Connect to load onchain history"
+        : activityStatus === "error"
+          ? "RPC activity fetch failed"
+          : "Grounded in live Arc activity",
+      tone:
+        !isConnected || activityStatus === "loading" || activityStatus === "refreshing"
+          ? "neutral"
+          : activityStatus === "error"
+            ? "warning"
+            : "positive",
+      placeholder: !isConnected
+    }
+  ];
 }
 
 function Sidebar() {
@@ -102,7 +125,11 @@ function Sidebar() {
 
       <nav className="sidebar-nav" aria-label="Primary">
         {navItems.map((item, index) => (
-          <a key={item.label} href={`#${item.id}`} className={index === 0 ? "nav-item active" : "nav-item"}>
+          <a
+            key={item.label}
+            href={`#${item.id}`}
+            className={index === 0 ? "nav-item active" : "nav-item"}
+          >
             <span className="nav-dot" />
             {item.label}
           </a>
@@ -110,9 +137,12 @@ function Sidebar() {
       </nav>
 
       <div className="sidebar-foot">
-        <p className="eyebrow">Live Mode</p>
-        <strong>USDC-native execution</strong>
-        <span>Fast monitoring for wallets, treasury movement, and strategy health.</span>
+        <p className="eyebrow">Launch Ready</p>
+        <strong>Built for public Arc demos</strong>
+        <span>
+          Honest pre-connect placeholders, live Arc wallet context, and a
+          polished assistant flow for public sharing.
+        </span>
       </div>
     </aside>
   );
@@ -120,134 +150,159 @@ function Sidebar() {
 
 function SummaryCard({ card }) {
   return (
-    <article className="panel stat-card">
+    <article
+      className={
+        card.placeholder ? "panel stat-card stat-card-placeholder" : "panel stat-card"
+      }
+    >
       <div className="stat-copy">
         <span className="eyebrow">{card.label}</span>
         <strong>{card.value}</strong>
         <span className={`delta ${card.tone}`}>{card.change}</span>
       </div>
-      <Sparkline points={card.points} />
+      <div className="stat-rail" aria-hidden="true">
+        <span className={`stat-rail-fill ${card.tone}`} />
+      </div>
     </article>
   );
 }
 
-function AllocationChart() {
+function WalletReadiness({ walletSnapshot }) {
+  const { address, isConnected, onArc, usdcBalance, balanceStatus } =
+    walletSnapshot || {};
+
+  const readinessItems = [
+    {
+      label: "Connect a wallet",
+      status: isConnected ? "Done" : "Required",
+      detail: isConnected
+        ? address
+        : "Connect a wallet to unlock live Arc wallet balance and activity."
+    },
+    {
+      label: "Use Arc Testnet",
+      status: !isConnected ? "Pending" : onArc ? "Ready" : "Switch",
+      detail: !isConnected
+        ? "The app is already configured for Arc Testnet."
+        : onArc
+          ? "Your wallet is on Chain ID 5042002."
+          : "Move your wallet to Arc Testnet before onchain actions."
+    },
+    {
+      label: "Read wallet context",
+      status: !isConnected
+        ? "Placeholder"
+        : balanceStatus === "loading"
+          ? "Loading"
+          : balanceStatus === "ready"
+            ? "Live"
+            : "Retry",
+      detail: !isConnected
+        ? "Wallet cards stay in placeholder mode until a wallet is connected."
+        : balanceStatus === "ready"
+          ? `Current Arc USDC balance: ${usdcBalance}`
+          : "Balance will appear here once the Arc RPC responds."
+    }
+  ];
+
   return (
-    <div className="panel section-card" id="section-treasury">
+    <section className="panel section-card" id="section-readiness">
       <div className="section-header">
         <div>
-          <p className="eyebrow">Allocation</p>
-          <h2>Portfolio spread</h2>
+          <p className="eyebrow">Wallet Readiness</p>
+          <h2>Launch-safe connection states</h2>
         </div>
-        <span className="section-chip">Updated 30s ago</span>
+        <span className="section-chip">
+          {isConnected ? "Live wallet detected" : "Preview mode"}
+        </span>
       </div>
 
-      <div className="allocation-stack" aria-hidden="true">
-        {allocation.map((item) => (
-          <span
-            key={item.label}
-            className="allocation-segment"
-            style={{ width: `${item.share}%`, background: item.color }}
-          />
-        ))}
-      </div>
-
-      <div className="allocation-list">
-        {allocation.map((item) => (
-          <div key={item.label} className="allocation-row">
-            <div className="allocation-label">
-              <span className="allocation-swatch" style={{ background: item.color }} />
-              <span>{item.label}</span>
+      <div className="readiness-list">
+        {readinessItems.map((item) => (
+          <div key={item.label} className="readiness-row">
+            <div className="readiness-copy">
+              <strong>{item.label}</strong>
+              <span>{item.detail}</span>
             </div>
-            <strong>{item.share}%</strong>
+            <span className="readiness-pill">{item.status}</span>
           </div>
         ))}
       </div>
-    </div>
+
+      <WalletConnectCta className="wallet-summary-actions" />
+    </section>
   );
 }
 
-function ChainMonitor() {
+function ArcInfoSection() {
   return (
-    <div className="panel section-card" id="section-agents">
+    <section className="panel section-card" id="section-arc">
       <div className="section-header">
         <div>
-          <p className="eyebrow">Network</p>
-          <h2>Arc monitor</h2>
+          <p className="eyebrow">Arc Testnet</p>
+          <h2>Network information</h2>
         </div>
-        <span className="section-chip success">Healthy</span>
+        <span className="section-chip success">Chain ready</span>
       </div>
 
-      <div className="metric-grid">
-        {chainMetrics.map((metric) => (
-          <div key={metric.label} className="metric-card">
-            <span>{metric.label}</span>
-            <strong>{metric.value}</strong>
+      <div className="arc-info-grid">
+        {ARC_TESTNET_INFO_ITEMS.map((item) => (
+          <div key={item.label} className="metric-card arc-info-card">
+            <span>{item.label}</span>
+            {item.href ? (
+              <a href={item.href} target="_blank" rel="noreferrer">
+                {item.value.replace(/^https?:\/\//, "")}
+              </a>
+            ) : (
+              <strong>{item.value}</strong>
+            )}
           </div>
         ))}
       </div>
-
-      <div className="progress-cluster">
-        <div>
-          <div className="progress-copy">
-            <span>RPC throughput</span>
-            <strong>92%</strong>
-          </div>
-          <div className="progress-rail">
-            <span style={{ width: "92%" }} />
-          </div>
-        </div>
-        <div>
-          <div className="progress-copy">
-            <span>Wallet sync</span>
-            <strong>87%</strong>
-          </div>
-          <div className="progress-rail">
-            <span style={{ width: "87%" }} />
-          </div>
-        </div>
-      </div>
-    </div>
+    </section>
   );
 }
 
 function ActivityPanel({ activity, activityStatus, activityError, isConnected }) {
-  const chipText =
-    !isConnected
-      ? "Connect wallet"
-      : activityStatus === "loading"
-        ? "Loading Arc activity..."
-        : activityStatus === "refreshing"
-          ? "Refreshing Arc activity..."
-          : activityStatus === "error"
-            ? "Activity unavailable"
-            : activity.length > 0
-              ? "Live onchain feed"
-              : "No recent events";
+  const chipText = !isConnected
+    ? "Awaiting wallet"
+    : activityStatus === "loading"
+      ? "Loading activity..."
+      : activityStatus === "refreshing"
+        ? "Refreshing..."
+        : activityStatus === "error"
+          ? "Activity unavailable"
+          : activity.length > 0
+            ? "Live onchain feed"
+            : "No recent events";
 
   return (
-    <div className="panel section-card" id="section-activity">
+    <section className="panel section-card section-card-wide" id="section-activity">
       <div className="section-header">
         <div>
           <p className="eyebrow">Recent Activity</p>
-          <h2>Ops feed</h2>
+          <h2>Arc wallet feed</h2>
         </div>
         <span className="section-chip">{chipText}</span>
       </div>
 
       {!isConnected ? (
         <div className="timeline-empty">
-          Connect your wallet and this panel will show real Arc Testnet transfers, approvals, and assistant saves for that address.
+          Connect your wallet and this feed will switch from placeholders to real
+          Arc Testnet transfers, approvals, and assistant saves for that address.
         </div>
       ) : activityStatus === "loading" && activity.length === 0 ? (
         <div className="timeline-empty">
-          Loading recent Arc wallet activity from the RPC...
+          Loading recent Arc wallet activity from the network RPC...
         </div>
       ) : activityError ? (
-        <div className="timeline-empty timeline-empty-error">{activityError}</div>
+        <div className="timeline-empty timeline-empty-error">
+          {activityError}
+        </div>
       ) : activity.length === 0 ? (
         <div className="timeline-empty">
-          No recent Arc wallet activity was found in the current onchain lookback window.
+          No recent Arc wallet activity was found in the current onchain
+          lookback window.
         </div>
       ) : (
         <div className="timeline">
@@ -264,7 +319,11 @@ function ActivityPanel({ activity, activityStatus, activityError, isConnected })
             return (
               <RowTag
                 key={event.id}
-                className={event.explorerUrl ? "timeline-row timeline-link-row" : "timeline-row"}
+                className={
+                  event.explorerUrl
+                    ? "timeline-row timeline-link-row"
+                    : "timeline-row"
+                }
                 {...rowProps}
               >
                 <span className="timeline-dot" />
@@ -279,7 +338,29 @@ function ActivityPanel({ activity, activityStatus, activityError, isConnected })
           })}
         </div>
       )}
-    </div>
+    </section>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="site-footer">
+      <div>
+        <p className="eyebrow">Built By</p>
+        <strong>Zubair / Zaddy Crypto</strong>
+      </div>
+      <div className="footer-links">
+        <a href={GITHUB_URL} target="_blank" rel="noreferrer">
+          GitHub
+        </a>
+        <a href={ARC_DOCS_URL} target="_blank" rel="noreferrer">
+          Arc Docs
+        </a>
+        <a href={arcTestnet.blockExplorers.default.url} target="_blank" rel="noreferrer">
+          ArcScan
+        </a>
+      </div>
+    </footer>
   );
 }
 
@@ -291,13 +372,19 @@ export default function Home({ assistantMode }) {
     error: activityError
   } = useArcWalletActivity(walletSnapshot.address);
 
+  const statCards = buildOverviewCards(
+    walletSnapshot,
+    activity,
+    activityStatus
+  );
+
   return (
     <>
       <Head>
         <title>arc-ai-wallet</title>
         <meta
           name="description"
-          content="arc-ai-wallet is a modern Arc Testnet wallet dashboard with Arc-native wallet tracking, AI assistance, and live onchain activity."
+          content="arc-ai-wallet is a polished public dashboard for Arc wallets with live Arc USDC balance, onchain activity, and AI assistance."
         />
         <meta name="theme-color" content="#02050b" />
         <link rel="canonical" href={SITE_URL} />
@@ -306,14 +393,14 @@ export default function Home({ assistantMode }) {
         <meta property="og:title" content="arc-ai-wallet" />
         <meta
           property="og:description"
-          content="Arc Testnet wallet tracking, AI assistance, and live onchain activity from one Arc-native command center."
+          content="Your AI-powered command center for Arc wallets."
         />
         <meta property="og:url" content={SITE_URL} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="arc-ai-wallet" />
         <meta
           name="twitter:description"
-          content="Arc Testnet wallet tracking, AI assistance, and live onchain activity from one Arc-native command center."
+          content="Your AI-powered command center for Arc wallets."
         />
       </Head>
 
@@ -324,16 +411,18 @@ export default function Home({ assistantMode }) {
           <header className="hero panel" id="section-overview">
             <div className="hero-copy">
               <p className="eyebrow">Arc AI Wallet</p>
-              <h2>Track your Arc wallet, review live onchain activity, and get AI help from one Arc-native command center.</h2>
+              <h2>Your AI-powered command center for Arc wallets.</h2>
               <p className="hero-text">
-                A polished Next.js product for Arc Testnet users who need wallet visibility,
-                USDC balance tracking, assistant memory onchain, and responsive AI-assisted monitoring.
+                Monitor Arc USDC balance, review live onchain activity, and use
+                a polished assistant experience that stays grounded in the
+                wallet context currently visible on the dashboard.
               </p>
               <div className="hero-tags">
-                <span>Wallet Connect</span>
-                <span>AI Assistant</span>
-                <span>Onchain Activity</span>
+                <span>Arc Testnet</span>
+                <span>USDC Gas</span>
+                <span>Onchain Assistant</span>
               </div>
+              <WalletConnectCta />
             </div>
 
             <div className="hero-side" id="section-wallet">
@@ -348,15 +437,16 @@ export default function Home({ assistantMode }) {
           </section>
 
           <section className="detail-grid">
-            <AllocationChart />
-            <ChainMonitor />
-            <ActivityPanel
-              activity={activity}
-              activityStatus={activityStatus}
-              activityError={activityError}
-              isConnected={walletSnapshot.isConnected}
-            />
+            <WalletReadiness walletSnapshot={walletSnapshot} />
+            <ArcInfoSection />
           </section>
+
+          <ActivityPanel
+            activity={activity}
+            activityStatus={activityStatus}
+            activityError={activityError}
+            isConnected={walletSnapshot.isConnected}
+          />
 
           <WalletAssistant
             activity={activity}
@@ -367,6 +457,8 @@ export default function Home({ assistantMode }) {
             assistantMode={assistantMode}
             walletSnapshot={walletSnapshot}
           />
+
+          <Footer />
         </section>
       </main>
     </>

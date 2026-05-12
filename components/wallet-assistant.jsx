@@ -6,7 +6,7 @@ const starterQuestions = [
   "Summarize my current wallet status.",
   "What does my recent activity suggest?",
   "What should I watch based on my USDC balance?",
-  "Explain arc-ai-wallet like I'm a new user."
+  "What should I do after connecting my wallet?"
 ];
 
 function MessageBubble({ message }) {
@@ -51,9 +51,7 @@ export default function WalletAssistant({
     {
       role: "assistant",
       content:
-        assistantMode === "openai"
-          ? "Ask about your wallet activity, USDC balance, or the recent dashboard events and I'll explain what the current data suggests."
-          : "Ask anything about the current dashboard. OpenAI is not configured yet, so I'll answer using local dashboard analysis."
+        "Ask about your wallet activity, Arc USDC balance, or recent dashboard events and I will keep the answer grounded in the current Arc dashboard context."
     }
   ]);
   const [question, setQuestion] = useState("");
@@ -61,9 +59,7 @@ export default function WalletAssistant({
   const [error, setError] = useState("");
   const [latestOnchainDraft, setLatestOnchainDraft] = useState(null);
   const [notice, setNotice] = useState(
-    assistantMode === "openai"
-      ? ""
-      : "Running in local analysis mode until OPENAI_API_KEY is added to the active environment."
+    "Responses stay grounded in the current wallet snapshot and visible Arc activity."
   );
 
   const walletSummary = useMemo(
@@ -160,6 +156,8 @@ export default function WalletAssistant({
     contractConfigured &&
     saveStatus !== "awaiting-wallet" &&
     saveStatus !== "confirming";
+  const hasUserMessages = messages.some((message) => message.role === "user");
+  const showEmptyState = !hasUserMessages && !isLoading;
 
   return (
     <section className="panel assistant-panel" id="section-assistant">
@@ -180,12 +178,38 @@ export default function WalletAssistant({
       <div className="assistant-layout">
         <div className="assistant-chat">
           {notice ? (
-            <div className="assistant-banner">
-              {notice}
-            </div>
+            <div className="assistant-banner">{notice}</div>
           ) : null}
 
           <div className="assistant-messages">
+            {showEmptyState ? (
+              <div
+                className={
+                  !isConnected && !activityError
+                    ? "assistant-state"
+                    : activityError
+                      ? "assistant-state assistant-state-error"
+                      : "assistant-state"
+                }
+              >
+                <span className="eyebrow">Assistant Ready</span>
+                <strong>
+                  {!isConnected
+                    ? "Connect a wallet to unlock personalized Arc guidance."
+                    : activityError
+                      ? "Activity context is temporarily unavailable."
+                      : "Ask a question about your Arc wallet and recent activity."}
+                </strong>
+                <p>
+                  {!isConnected
+                    ? "You can still explore the product, but connected wallets unlock live balance, network, and onchain activity context for better answers."
+                    : activityError
+                      ? activityError
+                      : "The assistant will stay grounded in the wallet snapshot and the onchain activity currently visible in this dashboard."}
+                </p>
+              </div>
+            ) : null}
+
             {messages.map((message, index) => (
               <MessageBubble
                 key={`${message.role}-${index}`}
@@ -208,8 +232,8 @@ export default function WalletAssistant({
               id="wallet-question"
               className="assistant-input"
               placeholder={
-                runtimeMode === "openai"
-                  ? "Why might my recent activity matter?"
+                !isConnected
+                  ? "Connect a wallet, or ask what this Arc dashboard can do."
                   : "Ask about the connected wallet, balance, or recent activity."
               }
               value={question}
@@ -219,8 +243,8 @@ export default function WalletAssistant({
             <div className="assistant-actions">
               <span className="assistant-hint">
                 {runtimeMode === "openai"
-                  ? "The assistant uses the current dashboard snapshot, not full explorer history."
-                  : "This mode reasons from the dashboard snapshot locally while OpenAI setup is missing or unavailable."}
+                  ? "Answers are based on the current dashboard snapshot, not full explorer history."
+                  : "Answers are based on the current dashboard snapshot visible here."}
               </span>
               <button
                 type="submit"
@@ -232,7 +256,13 @@ export default function WalletAssistant({
             </div>
           </form>
 
-          {error ? <p className="wallet-error">{error}</p> : null}
+          {error ? (
+            <div className="assistant-state assistant-state-error assistant-inline-state">
+              <span className="eyebrow">Assistant Error</span>
+              <strong>We could not complete that request.</strong>
+              <p>{error}</p>
+            </div>
+          ) : null}
         </div>
 
         <aside className="assistant-side">
