@@ -10,6 +10,10 @@ import WalletConnect, {
 } from "../components/wallet-connect";
 import { arcTestnet } from "../lib/arc-chain";
 import assistantDeployment from "../lib/generated/arc-assistant-deployment.json";
+import {
+  buildPortfolioInsights,
+  buildSecuritySignals
+} from "../lib/portfolio-page";
 import { useArcPortfolio } from "../lib/use-arc-portfolio";
 import { useArcWalletActivity } from "../lib/use-arc-wallet-activity";
 import { useArcWalletSnapshot } from "../lib/use-arc-wallet-snapshot";
@@ -156,6 +160,122 @@ function DemoShowcase() {
   );
 }
 
+function WalletHealthSection({ walletSnapshot, activityStatus, portfolio, activity }) {
+  const insights = buildPortfolioInsights(walletSnapshot, portfolio, activity);
+  const security = buildSecuritySignals(walletSnapshot, activityStatus, insights);
+
+  return (
+    <section className="card">
+      <div className="section-heading">
+        <div>
+          <p className="section-kicker">Wallet Health</p>
+          <h2>Real-time trust and risk posture</h2>
+        </div>
+        <span className="status-badge status-good">Live scoring</span>
+      </div>
+
+      <div className="health-score-grid">
+        <div className="health-score-card">
+          <span className="field-label">Wallet health score</span>
+          <strong>{security.score}/100</strong>
+          <small>
+            {walletSnapshot?.isSignedIn
+              ? "Computed from network state, activity coverage, and approval exposure."
+              : "Preview score shown. Connect your wallet for a live score."}
+          </small>
+        </div>
+        <div className="health-score-card">
+          <span className="field-label">Risk level</span>
+          <strong>{insights.riskLabel}</strong>
+          <small>{insights.summary}</small>
+        </div>
+        <div className="health-score-card">
+          <span className="field-label">Session state</span>
+          <strong>{security.session}</strong>
+          <small>{security.monitoring}</small>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function GuidedJourneySection() {
+  return (
+    <section className="card">
+      <div className="section-heading">
+        <div>
+          <p className="section-kicker">User Journey</p>
+          <h2>How the wallet experience unfolds</h2>
+        </div>
+      </div>
+      <div className="demo-preview-grid">
+        {[
+          ["01", "Connect wallet", "Use RainbowKit or WalletConnect to sign in on Arc Testnet."],
+          ["02", "Wallet scan", "Arc balances, token holdings, and recent activity load automatically."],
+          ["03", "AI analysis", "Copilot summarizes portfolio health, risk, and recent wallet behavior."],
+          ["04", "Review activity", "See readable transaction cards, approvals, and recent onchain events."],
+          ["05", "Take action", "Use guided prompts or Send USDC with wallet confirmation on Arc."],
+          ["06", "Save memory", "Store useful wallet insights on the deployed Arc assistant contract."]
+        ].map(([step, title, body]) => (
+          <article key={step} className="demo-preview-card">
+            <span className="field-label">{step}</span>
+            <strong>{title}</strong>
+            <p>{body}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function WhyArcSection() {
+  return (
+    <section className="card">
+      <div className="section-heading">
+        <div>
+          <p className="section-kicker">Why Built on Arc</p>
+          <h2>Arc is a natural home for AI-native wallets</h2>
+        </div>
+        <span className="status-badge">Arc ecosystem</span>
+      </div>
+      <div className="demo-preview-grid">
+        <article className="demo-preview-card">
+          <span className="field-label">USDC Gas</span>
+          <strong>Payments feel familiar</strong>
+          <p>
+            Arc uses USDC for gas, which makes wallet balances and fees easier to
+            understand for both humans and AI copilots.
+          </p>
+        </article>
+        <article className="demo-preview-card">
+          <span className="field-label">Fast Settlement</span>
+          <strong>Responsive wallet UX</strong>
+          <p>
+            Fast confirmation loops make live portfolio tracking and AI-assisted
+            actions feel immediate instead of speculative.
+          </p>
+        </article>
+        <article className="demo-preview-card">
+          <span className="field-label">AI-Native Infra</span>
+          <strong>Built for smart agents</strong>
+          <p>
+            Arc’s ecosystem fits products where AI explains transactions, detects
+            risk, and helps users take wallet actions safely.
+          </p>
+        </article>
+        <article className="demo-preview-card">
+          <span className="field-label">Circle Alignment</span>
+          <strong>Stablecoin-centric flows</strong>
+          <p>
+            Circle-style stablecoin payment flows map cleanly to Arc’s wallet
+            model, treasury tracking, and spend automation.
+          </p>
+        </article>
+      </div>
+    </section>
+  );
+}
+
 function LandingState() {
   return (
     <section className="card">
@@ -250,7 +370,15 @@ export default function Home() {
           <Hero isSignedIn={isSignedIn} />
           <HomePortfolioGateway isSignedIn={isSignedIn} />
           <WalletConnect walletSnapshot={walletSnapshot} />
+          <WalletHealthSection
+            walletSnapshot={walletSnapshot}
+            activityStatus={activityStatus}
+            portfolio={portfolio}
+            activity={activity}
+          />
           {!isSignedIn ? <DemoShowcase /> : null}
+          <GuidedJourneySection />
+          <WhyArcSection />
           <WalletAssistant
             walletSnapshot={walletSnapshot}
             portfolio={portfolio}

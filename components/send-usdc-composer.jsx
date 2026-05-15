@@ -13,6 +13,32 @@ function normalizeAmount(value) {
   return String(value || "").replace(/[^\d.]/g, "");
 }
 
+function shortAddress(address) {
+  if (!address) {
+    return "";
+  }
+
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+function normalizeUiError(error) {
+  const message = error instanceof Error ? error.message : "";
+
+  if (!message) {
+    return "Unable to prepare the USDC transfer.";
+  }
+
+  if (message.toLowerCase().includes("user rejected")) {
+    return "The wallet request was rejected before the transfer was submitted.";
+  }
+
+  if (message.toLowerCase().includes("insufficient")) {
+    return "The wallet does not have enough balance or gas to complete this transfer.";
+  }
+
+  return message;
+}
+
 export default function SendUsdcComposer({
   walletAddress,
   open,
@@ -32,6 +58,10 @@ export default function SendUsdcComposer({
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
   const [formError, setFormError] = useState("");
+  const recipientValid = Boolean(recipient) && isAddress(recipient);
+  const amountValue = Number(amount || 0);
+  const amountValid = Boolean(amount) && Number.isFinite(amountValue) && amountValue > 0;
+  const networkReady = chainId === arcTestnet.id;
 
   const explorerUrl = useMemo(() => {
     if (!hash) {
@@ -79,11 +109,7 @@ export default function SendUsdcComposer({
 
       onTransactionSubmitted?.(transactionHash);
     } catch (error) {
-      setFormError(
-        error instanceof Error
-          ? error.message
-          : "Unable to prepare the USDC transfer."
-      );
+      setFormError(normalizeUiError(error));
     }
   };
 
@@ -108,6 +134,39 @@ export default function SendUsdcComposer({
       </div>
 
       <form className="composer-form" onSubmit={handleSubmit}>
+        <div className="composer-summary-grid">
+          <div className="summary-card">
+            <span className="field-label">Sender</span>
+            <strong>{walletAddress ? shortAddress(walletAddress) : "No wallet connected"}</strong>
+            <small>Wallet confirmation is required before broadcast.</small>
+          </div>
+          <div className="summary-card">
+            <span className="field-label">Recipient</span>
+            <strong>{recipient ? shortAddress(recipient) : "Waiting for address"}</strong>
+            <small>
+              {recipient
+                ? recipientValid
+                  ? "Valid wallet address detected."
+                  : "Address format is not valid yet."
+                : "Paste the destination wallet address."}
+            </small>
+          </div>
+          <div className="summary-card">
+            <span className="field-label">Amount</span>
+            <strong>{amountValid ? `${amount} USDC` : "0.00 USDC"}</strong>
+            <small>USDC transfers use the Arc native payment model.</small>
+          </div>
+          <div className="summary-card">
+            <span className="field-label">Network</span>
+            <strong>{networkReady ? "Arc Testnet" : "Network switch required"}</strong>
+            <small>
+              {networkReady
+                ? "Ready to submit on chain ID 5042002."
+                : "The app will request a switch before sending."}
+            </small>
+          </div>
+        </div>
+
         <label className="composer-field">
           <span className="field-label">Recipient</span>
           <input
@@ -128,6 +187,19 @@ export default function SendUsdcComposer({
             inputMode="decimal"
           />
         </label>
+
+        <div className="empty-state empty-state-compact">
+          <strong>Transaction safety check</strong>
+          <p>
+            {recipient && !recipientValid
+              ? "The recipient address is not valid yet, so the transfer is blocked."
+              : !amountValid
+                ? "Enter a positive USDC amount to unlock the transfer action."
+                : !networkReady
+                  ? "The wallet is not on Arc Testnet yet. The app will request the correct network before submission."
+                  : "Review the recipient and amount carefully. This transfer will move real testnet USDC once you confirm in your wallet."}
+          </p>
+        </div>
 
         <div className="composer-actions">
           <button

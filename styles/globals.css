@@ -474,7 +474,10 @@ button:disabled {
 
 .wallet-summary-grid,
 .portfolio-summary-grid,
-.network-facts-grid {
+.network-facts-grid,
+.copilot-summary-grid,
+.health-score-grid,
+.composer-summary-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
@@ -482,7 +485,8 @@ button:disabled {
 
 .wallet-summary-item,
 .summary-card,
-.network-fact {
+.network-fact,
+.health-score-card {
   display: grid;
   gap: 8px;
   padding: 16px;
@@ -512,13 +516,92 @@ button:disabled {
 .portfolio-skeleton-grid,
 .asset-list,
 .assistant-thread,
-.activity-list {
+.activity-list,
+.insight-grid,
+.composer-form {
   display: grid;
   gap: 12px;
 }
 
 .asset-list {
   gap: 14px;
+}
+
+.insight-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.insight-card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.insight-card strong {
+  line-height: 1.6;
+}
+
+.insight-card-good {
+  border-color: rgba(125, 211, 174, 0.24);
+}
+
+.insight-card-warning {
+  border-color: rgba(241, 160, 174, 0.24);
+}
+
+.insight-card-subtle {
+  opacity: 0.92;
+}
+
+.action-row,
+.composer-actions,
+.assistant-actions-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.assistant-actions-panel {
+  align-items: stretch;
+}
+
+.assistant-actions-panel .summary-card {
+  flex: 1 1 280px;
+}
+
+.composer-panel {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.composer-field {
+  display: grid;
+  gap: 8px;
+}
+
+.composer-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+}
+
+.composer-input:focus {
+  outline: 1px solid rgba(102, 182, 255, 0.45);
+  border-color: rgba(102, 182, 255, 0.35);
+}
+
+.composer-actions {
+  justify-content: flex-start;
 }
 
 .skeleton-card {
@@ -897,6 +980,10 @@ button:disabled {
   .demo-preview-grid,
   .wallet-summary-grid,
   .portfolio-summary-grid,
+  .copilot-summary-grid,
+  .health-score-grid,
+  .composer-summary-grid,
+  .insight-grid,
   .network-facts-grid,
   .activity-row {
     grid-template-columns: 1fr;
@@ -916,6 +1003,9 @@ button:disabled {
   }
 
   .assistant-form-row,
+  .action-row,
+  .composer-actions,
+  .assistant-actions-panel,
   .activity-card-head,
   .activity-card-footer,
   .activity-card-meta,
