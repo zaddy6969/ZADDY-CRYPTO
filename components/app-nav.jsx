@@ -64,7 +64,7 @@ export default function AppNav() {
                 : "border-white/10 bg-white/5 text-white hover:border-sky-300/30 hover:bg-white/8"
             )}
           >
-            Open Portfolio
+            Open Portfolio Dashboard
           </Link>
           <Badge tone="blue">Live on Arc Testnet</Badge>
         </div>

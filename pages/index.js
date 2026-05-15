@@ -34,8 +34,8 @@ function Hero({ isSignedIn }) {
       </div>
       <div className="hero-actions">
         {!isSignedIn ? <WalletConnectCta className="hero-actions-inline" /> : null}
-        <Link href="/portfolio" className="button button-secondary">
-          Open Portfolio
+        <Link href="/portfolio" className="button button-primary">
+          Open Portfolio Dashboard
         </Link>
         <a
           href={CONTRACT_URL}
@@ -71,7 +71,7 @@ function HomePortfolioGateway({ isSignedIn }) {
           </p>
           <div className="hero-actions">
             <Link href="/portfolio" className="button button-primary">
-              Open Portfolio
+              Open Portfolio Dashboard
             </Link>
             {!isSignedIn ? (
               <span className="helper-copy">
@@ -93,6 +93,64 @@ function HomePortfolioGateway({ isSignedIn }) {
           <div className="portfolio-preview-chip">AI wallet insights</div>
           <div className="portfolio-preview-chip">Security monitoring</div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function DemoPreviewCard({ kicker, title, body, points }) {
+  return (
+    <article className="demo-preview-card">
+      <p className="section-kicker">{kicker}</p>
+      <strong>{title}</strong>
+      <p>{body}</p>
+      <div className="demo-preview-points">
+        {points.map((point) => (
+          <span key={point} className="demo-preview-point">
+            {point}
+          </span>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function DemoShowcase() {
+  return (
+    <section className="card">
+      <div className="section-heading">
+        <div>
+          <p className="section-kicker">Demo Mode</p>
+          <h2>Explore the app before connecting a wallet</h2>
+        </div>
+        <span className="status-badge">Preview available</span>
+      </div>
+
+      <div className="demo-preview-grid">
+        <DemoPreviewCard
+          kicker="Portfolio Preview"
+          title="Live portfolio layout"
+          body="See the structure for wallet overview, tracked assets, analytics, and recent activity before connecting."
+          points={["Wallet overview", "Asset cards", "Analytics charts"]}
+        />
+        <DemoPreviewCard
+          kicker="AI Wallet Assistant"
+          title="Copilot-first experience"
+          body="The assistant explains balances, summarizes activity, and helps users understand Arc wallet behavior."
+          points={["Balance analysis", "Risk checks", "Action prompts"]}
+        />
+        <DemoPreviewCard
+          kicker="Transaction Activity"
+          title="Readable Arc wallet feed"
+          body="Recent transfers and approvals are turned into clean cards with labels, timestamps, and ArcScan links."
+          points={["Sent / received", "Approval flow", "ArcScan links"]}
+        />
+        <DemoPreviewCard
+          kicker="Arc Testnet Support"
+          title="Built for Arc from day one"
+          body="Arc Testnet network details, USDC gas model, and contract links are part of the default experience."
+          points={["Chain ID 5042002", "USDC gas", "Arc RPC + explorer"]}
+        />
       </div>
     </section>
   );
@@ -191,6 +249,8 @@ export default function Home() {
           <AppNav />
           <Hero isSignedIn={isSignedIn} />
           <HomePortfolioGateway isSignedIn={isSignedIn} />
+          <WalletConnect walletSnapshot={walletSnapshot} />
+          {!isSignedIn ? <DemoShowcase /> : null}
 
           {!isSignedIn ? (
             <>
@@ -205,7 +265,6 @@ export default function Home() {
                 activity={activity}
                 activityStatus={activityStatus}
               />
-              <WalletConnect walletSnapshot={walletSnapshot} />
               <PortfolioSummary
                 walletSnapshot={walletSnapshot}
                 portfolio={portfolio}

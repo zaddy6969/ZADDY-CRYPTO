@@ -236,6 +236,52 @@ button:disabled {
   line-height: 1.5;
 }
 
+.demo-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.demo-preview-card {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(135deg, rgba(102, 182, 255, 0.08), rgba(142, 107, 255, 0.04)),
+    var(--surface);
+}
+
+.demo-preview-card strong {
+  font-size: 1.06rem;
+}
+
+.demo-preview-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.demo-preview-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.demo-preview-point {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(120, 170, 255, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: #dce7ff;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
 .onboarding-list {
   display: grid;
   gap: 12px;
@@ -848,6 +894,7 @@ button:disabled {
 @media (max-width: 900px) {
   .onboarding-grid,
   .portfolio-launch-grid,
+  .demo-preview-grid,
   .wallet-summary-grid,
   .portfolio-summary-grid,
   .network-facts-grid,
