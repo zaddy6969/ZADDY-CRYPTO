@@ -1,5 +1,8 @@
 import Head from "next/head";
+import Link from "next/link";
+import AppNav from "../components/app-nav";
 import PortfolioSummary from "../components/portfolio-summary";
+import SiteFooter from "../components/site-footer";
 import TransactionActivity from "../components/transaction-activity";
 import WalletAssistant from "../components/wallet-assistant";
 import WalletConnect, {
@@ -14,39 +17,7 @@ import { useArcWalletSnapshot } from "../lib/use-arc-wallet-snapshot";
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://arc-ai-wallet.vercel.app";
 
-const GITHUB_URL = "https://github.com/zaddy6969/ZADDY-CRYPTO";
-const X_URL = "https://x.com/ARC_AI_WALLET";
-const ARC_DOCS_URL = "https://docs.arc.network/";
 const CONTRACT_URL = `${arcTestnet.blockExplorers.default.url}/address/${assistantDeployment.address}`;
-
-function Footer() {
-  return (
-    <footer className="site-footer">
-      <div>
-        <p className="section-kicker">Ecosystem</p>
-        <strong>Build on Arc</strong>
-      </div>
-      <div className="footer-links">
-        <a href={X_URL} target="_blank" rel="noreferrer">
-          X
-        </a>
-        <a href={GITHUB_URL} target="_blank" rel="noreferrer">
-          GitHub
-        </a>
-        <a href={ARC_DOCS_URL} target="_blank" rel="noreferrer">
-          Arc Docs
-        </a>
-        <a
-          href={arcTestnet.blockExplorers.default.url}
-          target="_blank"
-          rel="noreferrer"
-        >
-          ArcScan
-        </a>
-      </div>
-    </footer>
-  );
-}
 
 function Hero({ isSignedIn }) {
   return (
@@ -63,6 +34,9 @@ function Hero({ isSignedIn }) {
       </div>
       <div className="hero-actions">
         {!isSignedIn ? <WalletConnectCta className="hero-actions-inline" /> : null}
+        <Link href="/portfolio" className="button button-secondary">
+          Open Portfolio
+        </Link>
         <a
           href={CONTRACT_URL}
           target="_blank"
@@ -71,6 +45,54 @@ function Hero({ isSignedIn }) {
         >
           View Contract on ArcScan
         </a>
+      </div>
+    </section>
+  );
+}
+
+function HomePortfolioGateway({ isSignedIn }) {
+  return (
+    <section className="card portfolio-launch-card">
+      <div className="section-heading">
+        <div>
+          <p className="section-kicker">New Portfolio</p>
+          <h2>Open the full Arc portfolio dashboard</h2>
+        </div>
+        <span className="status-badge status-good">Live now</span>
+      </div>
+
+      <div className="portfolio-launch-grid">
+        <div className="portfolio-launch-copy">
+          <strong>Portfolio is now a separate premium workspace inside the app.</strong>
+          <p>
+            View wallet overview, live supported Arc balances, analytics charts,
+            transaction feed, AI insights, security monitoring, and quick wallet
+            actions from one dedicated page.
+          </p>
+          <div className="hero-actions">
+            <Link href="/portfolio" className="button button-primary">
+              Open Portfolio
+            </Link>
+            {!isSignedIn ? (
+              <span className="helper-copy">
+                Connect your wallet after opening it to load live balances.
+              </span>
+            ) : (
+              <span className="helper-copy">
+                Your connected wallet data will carry straight into the portfolio page.
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="portfolio-launch-preview">
+          <div className="portfolio-preview-chip">Wallet overview</div>
+          <div className="portfolio-preview-chip">Assets + search</div>
+          <div className="portfolio-preview-chip">24H / 7D / 30D analytics</div>
+          <div className="portfolio-preview-chip">Arc activity feed</div>
+          <div className="portfolio-preview-chip">AI wallet insights</div>
+          <div className="portfolio-preview-chip">Security monitoring</div>
+        </div>
       </div>
     </section>
   );
@@ -166,12 +188,14 @@ export default function Home() {
 
       <main className="page-shell">
         <div className="page-frame">
+          <AppNav />
           <Hero isSignedIn={isSignedIn} />
+          <HomePortfolioGateway isSignedIn={isSignedIn} />
 
           {!isSignedIn ? (
             <>
               <LandingState />
-              <Footer />
+              <SiteFooter />
             </>
           ) : (
             <>
@@ -192,7 +216,7 @@ export default function Home() {
                 status={activityStatus}
                 error={activityError}
               />
-              <Footer />
+              <SiteFooter />
             </>
           )}
         </div>

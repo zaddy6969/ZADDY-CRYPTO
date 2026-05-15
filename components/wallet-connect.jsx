@@ -74,6 +74,8 @@ export default function WalletConnect({ walletSnapshot }) {
     onArc,
     usdcBalance,
     balanceStatus,
+    balanceError,
+    balanceSource,
     disconnectWallet
   } = walletSnapshot || {};
 
@@ -159,14 +161,21 @@ export default function WalletConnect({ walletSnapshot }) {
                     <strong>{arcReady ? "Arc ready" : "Switch to Arc Testnet"}</strong>
                   </div>
                   <div className="wallet-summary-item">
-                    <span className="field-label">USDC balance</span>
+                    <span className="field-label">Arc wallet balance</span>
                     <strong>
-                      {balanceStatus === "loading"
+                      {balanceStatus === "loading" || balanceStatus === "refreshing"
                         ? "Loading..."
                         : balanceStatus === "ready"
                           ? usdcBalance
-                          : "Unavailable"}
+                          : "Syncing..."}
                     </strong>
+                    <small>
+                      {balanceStatus === "ready"
+                        ? balanceSource === "erc20"
+                          ? "Using Arc USDC token interface"
+                          : "Using Arc native balance"
+                        : balanceError || "Reading your latest Arc balance"}
+                    </small>
                   </div>
                 </div>
 

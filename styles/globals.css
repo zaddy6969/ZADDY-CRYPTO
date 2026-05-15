@@ -1,4 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --bg: #050811;
@@ -164,6 +167,73 @@ button:disabled {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   gap: 16px;
+}
+
+.portfolio-launch-card {
+  overflow: hidden;
+  position: relative;
+}
+
+.portfolio-launch-card::after {
+  content: "";
+  position: absolute;
+  inset: auto auto -80px -40px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(102, 182, 255, 0.14), transparent 72%);
+  pointer-events: none;
+}
+
+.portfolio-launch-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.portfolio-launch-copy,
+.portfolio-launch-preview {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  position: relative;
+  z-index: 1;
+}
+
+.portfolio-launch-copy strong {
+  font-size: 1.08rem;
+}
+
+.portfolio-launch-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.portfolio-launch-preview {
+  align-content: start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.portfolio-preview-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(120, 170, 255, 0.18);
+  background:
+    linear-gradient(135deg, rgba(102, 182, 255, 0.11), rgba(142, 107, 255, 0.08));
+  color: #e3edff;
+  text-align: center;
+  font-size: 0.93rem;
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 .onboarding-list {
@@ -401,6 +471,10 @@ button:disabled {
   gap: 12px;
 }
 
+.asset-list {
+  gap: 14px;
+}
+
 .skeleton-card {
   display: grid;
   gap: 12px;
@@ -445,7 +519,7 @@ button:disabled {
 }
 
 .asset-row {
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1.2fr) minmax(0, 0.9fr) minmax(0, 0.8fr);
 }
 
 .asset-logo {
@@ -456,6 +530,12 @@ button:disabled {
   border-radius: 16px;
   font-weight: 800;
   color: #04101e;
+  overflow: hidden;
+}
+
+.asset-logo span {
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
 }
 
 .asset-logo-blue {
@@ -470,12 +550,24 @@ button:disabled {
   background: linear-gradient(135deg, #95efff, #49b5ff);
 }
 
+.asset-logo-neutral {
+  background: linear-gradient(135deg, #cfd8eb, #8090b4);
+}
+
 .asset-copy,
 .asset-metrics,
 .activity-row > div,
 .assistant-message {
   display: grid;
   gap: 6px;
+}
+
+.asset-metrics {
+  text-align: right;
+}
+
+.asset-metrics-trailing strong {
+  color: #d9e7ff;
 }
 
 .asset-copy strong span {
@@ -755,11 +847,25 @@ button:disabled {
 
 @media (max-width: 900px) {
   .onboarding-grid,
+  .portfolio-launch-grid,
   .wallet-summary-grid,
   .portfolio-summary-grid,
   .network-facts-grid,
   .activity-row {
     grid-template-columns: 1fr;
+  }
+
+  .asset-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .portfolio-launch-preview {
+    grid-template-columns: 1fr;
+  }
+
+  .asset-metrics,
+  .asset-metrics-trailing {
+    text-align: left;
   }
 
   .assistant-form-row,
