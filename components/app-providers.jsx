@@ -12,6 +12,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import {
+  MULTICHAIN_WALLET_CHAINS,
   arcTestnet,
   hasWalletConnectProjectId,
   walletConnectProjectId
@@ -43,11 +44,14 @@ const connectors = connectorsForWallets(
 
 const config = createConfig({
   connectors,
-  chains: [arcTestnet],
+  chains: MULTICHAIN_WALLET_CHAINS,
   ssr: true,
-  transports: {
-    [arcTestnet.id]: http(arcTestnet.rpcUrls.default.http[0])
-  }
+  transports: Object.fromEntries(
+    MULTICHAIN_WALLET_CHAINS.map((chain) => [
+      chain.id,
+      http(chain.rpcUrls.default.http[0])
+    ])
+  )
 });
 
 const rainbowTheme = darkTheme({

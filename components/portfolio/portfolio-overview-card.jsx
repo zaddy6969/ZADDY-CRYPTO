@@ -9,7 +9,7 @@ export default function PortfolioOverviewCard({
   onCopyAddress,
   onReceive,
   onOpenSend,
-  onOpenSwapGuide,
+  onOpenBridge,
   onViewAddress
 }) {
   const isSignedIn = walletSnapshot?.isSignedIn;
@@ -124,8 +124,8 @@ export default function PortfolioOverviewCard({
             <Button variant="secondary" onClick={onReceive}>
               Receive
             </Button>
-            <Button variant="secondary" onClick={onOpenSwapGuide}>
-              Swap
+            <Button variant="secondary" onClick={onOpenBridge}>
+              Bridge to Arc
             </Button>
           </div>
         ) : null}

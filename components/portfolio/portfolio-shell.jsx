@@ -12,6 +12,7 @@ import {
   filterActivityByWindow,
   getActivityKind
 } from "../../lib/portfolio-page";
+import BridgeToArcPanel from "../bridge-to-arc-panel";
 import SendUsdcComposer from "../send-usdc-composer";
 import PortfolioActivityPanel from "./portfolio-activity-panel";
 import PortfolioAnalyticsPanel from "./portfolio-analytics-panel";
@@ -95,8 +96,9 @@ export default function PortfolioShell({
     await handleCopyAddress();
   };
 
-  const handleOpenSwapGuide = () => {
-    window.open("https://docs.arc.io/app-kit", "_blank", "noopener,noreferrer");
+  const handleOpenBridge = () => {
+    const section = document.getElementById("portfolio-bridge");
+    section?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleViewAddress = () => {
@@ -124,7 +126,7 @@ export default function PortfolioShell({
           onCopyAddress={handleCopyAddress}
           onReceive={handleReceive}
           onOpenSend={() => setComposerOpen(true)}
-          onOpenSwapGuide={handleOpenSwapGuide}
+          onOpenBridge={handleOpenBridge}
           onViewAddress={handleViewAddress}
         />
 
@@ -135,6 +137,14 @@ export default function PortfolioShell({
             onClose={() => setComposerOpen(false)}
           />
         </AnimatePanel>
+
+        <BridgeToArcPanel
+          sectionId="portfolio-bridge"
+          compact
+          walletSnapshot={walletSnapshot}
+          title="Bridge testnet USDC into Arc"
+          subtitle="Use Circle App Kit to move USDC from Ethereum Sepolia or Base Sepolia into Arc Testnet."
+        />
 
         <PortfolioAssetsPanel
           isSignedIn={walletSnapshot?.isSignedIn}

@@ -1,6 +1,7 @@
 import Head from "next/head";
 import Link from "next/link";
 import AppNav from "../components/app-nav";
+import BridgeToArcPanel from "../components/bridge-to-arc-panel";
 import PortfolioSummary from "../components/portfolio-summary";
 import SiteFooter from "../components/site-footer";
 import TransactionActivity from "../components/transaction-activity";
@@ -379,6 +380,7 @@ export default function Home() {
           {!isSignedIn ? <DemoShowcase /> : null}
           <GuidedJourneySection />
           <WhyArcSection />
+          <BridgeToArcPanel walletSnapshot={walletSnapshot} />
           <WalletAssistant
             walletSnapshot={walletSnapshot}
             portfolio={portfolio}
