@@ -251,33 +251,24 @@ export default function Home() {
           <HomePortfolioGateway isSignedIn={isSignedIn} />
           <WalletConnect walletSnapshot={walletSnapshot} />
           {!isSignedIn ? <DemoShowcase /> : null}
-
-          {!isSignedIn ? (
-            <>
-              <LandingState />
-              <SiteFooter />
-            </>
-          ) : (
-            <>
-              <WalletAssistant
-                walletSnapshot={walletSnapshot}
-                portfolio={portfolio}
-                activity={activity}
-                activityStatus={activityStatus}
-              />
-              <PortfolioSummary
-                walletSnapshot={walletSnapshot}
-                portfolio={portfolio}
-              />
-              <TransactionActivity
-                isSignedIn={isSignedIn}
-                activity={activity}
-                status={activityStatus}
-                error={activityError}
-              />
-              <SiteFooter />
-            </>
-          )}
+          <WalletAssistant
+            walletSnapshot={walletSnapshot}
+            portfolio={portfolio}
+            activity={activity}
+            activityStatus={activityStatus}
+          />
+          <PortfolioSummary
+            walletSnapshot={walletSnapshot}
+            portfolio={portfolio}
+          />
+          <TransactionActivity
+            isSignedIn={isSignedIn}
+            activity={activity}
+            status={activityStatus}
+            error={activityError}
+          />
+          {!isSignedIn ? <LandingState /> : null}
+          <SiteFooter />
         </div>
       </main>
     </>

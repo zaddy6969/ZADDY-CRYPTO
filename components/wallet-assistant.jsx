@@ -78,7 +78,7 @@ export default function WalletAssistant({
     {
       role: "assistant",
       content:
-        "I’m your Arc wallet copilot. Ask me to analyze balances, explain a transaction, check risk, or prepare a USDC action."
+        "I'm your Arc wallet copilot. Ask me to analyze balances, explain a transaction, check risk, or prepare a USDC action."
     }
   ]);
   const [question, setQuestion] = useState("");
@@ -217,13 +217,15 @@ export default function WalletAssistant({
     try {
       await streamAssistantReply(nextMessages, trimmed);
     } catch {
-      setMessages((current) => current.filter((item, index) => {
-        if (index < current.length - 1) {
-          return true;
-        }
+      setMessages((current) =>
+        current.filter((item, index) => {
+          if (index < current.length - 1) {
+            return true;
+          }
 
-        return item.content;
-      }));
+          return item.content;
+        })
+      );
       setError("Wallet Copilot is temporarily unavailable. Please try again shortly.");
     } finally {
       setLoading(false);
@@ -285,7 +287,13 @@ export default function WalletAssistant({
           <h2>AI-powered wallet intelligence built on Arc</h2>
         </div>
         <span className="status-badge">
-          {loading ? "Thinking" : walletSnapshot?.onArc ? "Arc ready" : "Ready"}
+          {loading
+            ? "Thinking"
+            : walletSnapshot?.isSignedIn
+              ? walletSnapshot?.onArc
+                ? "Arc ready"
+                : "Switch network"
+              : "Preview mode"}
         </span>
       </div>
 
@@ -302,16 +310,30 @@ export default function WalletAssistant({
         <div className="summary-card">
           <span className="field-label">Visible balance</span>
           <strong>{walletSnapshot?.usdcBalance || "Balance syncing"}</strong>
-          <small>{walletSnapshot?.balanceStatus === "ready" ? "Live wallet snapshot" : "Waiting for Arc balance data"}</small>
+          <small>
+            {walletSnapshot?.balanceStatus === "ready"
+              ? "Live wallet snapshot"
+              : "Waiting for Arc balance data"}
+          </small>
         </div>
         <div className="summary-card">
           <span className="field-label">Recent activity</span>
           <strong>{Array.isArray(activity) ? activity.length : 0} events</strong>
-          <small>{activityStatus === "ready" ? "Loaded from Arc RPC" : "Fetching latest Arc wallet feed"}</small>
+          <small>
+            {activityStatus === "ready"
+              ? "Loaded from Arc RPC"
+              : "Fetching latest Arc wallet feed"}
+          </small>
         </div>
       </div>
 
       {notice ? <p className="helper-copy">{notice}</p> : null}
+      {!walletSnapshot?.isSignedIn ? (
+        <p className="helper-copy">
+          Copilot can answer in preview mode right now. Connect your wallet for live
+          Arc balances, wallet activity, and onchain actions.
+        </p>
+      ) : null}
 
       <div className="insight-grid">
         {insights.map((item) => (
@@ -373,7 +395,7 @@ export default function WalletAssistant({
         />
         <div className="assistant-form-row">
           <span className="helper-copy">
-            Ask things like “What does this transaction do?” or “How much USDC do I have?”
+            Ask things like "What does this transaction do?" or "How much USDC do I have?"
           </span>
           <button
             type="submit"
@@ -423,13 +445,21 @@ export default function WalletAssistant({
             type="button"
             className="button button-primary"
             onClick={handleSaveLatest}
-            disabled={assistantContract.saveStatus === "awaiting-wallet" || assistantContract.saveStatus === "confirming" || loading}
+            disabled={
+              !walletSnapshot?.isSignedIn ||
+              !walletSnapshot?.onArc ||
+              assistantContract.saveStatus === "awaiting-wallet" ||
+              assistantContract.saveStatus === "confirming" ||
+              loading
+            }
           >
             {assistantContract.saveStatus === "awaiting-wallet"
               ? "Confirm in wallet..."
               : assistantContract.saveStatus === "confirming"
                 ? "Saving on Arc..."
-                : "Save latest answer on Arc"}
+                : !walletSnapshot?.isSignedIn
+                  ? "Connect wallet to save on Arc"
+                  : "Save latest answer on Arc"}
           </button>
           {assistantContract.contractExplorerUrl ? (
             <a
@@ -448,8 +478,7 @@ export default function WalletAssistant({
         <div className="empty-state empty-state-compact">
           <strong>Latest saved copilot memory</strong>
           <p>
-            Stored on {assistantContract.latestInteraction.createdAtLabel}. Prompt:
-            {" "}
+            Stored on {assistantContract.latestInteraction.createdAtLabel}. Prompt:{" "}
             {assistantContract.latestInteraction.prompt}
           </p>
         </div>
