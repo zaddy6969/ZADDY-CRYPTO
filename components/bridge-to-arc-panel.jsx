@@ -28,6 +28,10 @@ function isValidAmount(value) {
   return Number.isFinite(numeric) && numeric > 0;
 }
 
+function normalizeAmount(value) {
+  return String(value || "").replace(/[^\d.]/g, "");
+}
+
 function humanizeStepName(name) {
   return String(name || "Bridge step")
     .replace(/[_-]+/g, " ")
@@ -79,7 +83,7 @@ export default function BridgeToArcPanel({
     [sourceChainId]
   );
 
-  const recipientLooksValid = isAddress(recipientAddress || "0x0");
+  const recipientLooksValid = Boolean(recipientAddress) && isAddress(recipientAddress);
   const amountLooksValid = isValidAmount(amount);
   const needsSourceSwitch = isSignedIn && currentChainId !== sourceChain.id;
 
@@ -105,6 +109,10 @@ export default function BridgeToArcPanel({
     setBridgeResult(null);
 
     try {
+      if (needsSourceSwitch && switchChainAsync) {
+        await switchChainAsync({ chainId: sourceChain.id });
+      }
+
       const provider = await connector.getProvider();
       const bridgeClient = await createArcBridgeClient(provider);
       const nextEstimate = await bridgeClient.kit.estimateBridge({
@@ -138,6 +146,10 @@ export default function BridgeToArcPanel({
     setError("");
 
     try {
+      if (needsSourceSwitch && switchChainAsync) {
+        await switchChainAsync({ chainId: sourceChain.id });
+      }
+
       const provider = await connector.getProvider();
       const bridgeClient = await createArcBridgeClient(provider);
       const result = await bridgeClient.kit.bridge({
@@ -294,7 +306,7 @@ export default function BridgeToArcPanel({
                 <input
                   value={amount}
                   onChange={(event) => {
-                    setAmount(event.target.value);
+                    setAmount(normalizeAmount(event.target.value));
                     setEstimate(null);
                     setBridgeResult(null);
                     setStatus("idle");
@@ -316,7 +328,7 @@ export default function BridgeToArcPanel({
                 <input
                   value={recipientAddress}
                   onChange={(event) => {
-                    setRecipientAddress(event.target.value);
+                    setRecipientAddress(event.target.value.trim());
                     setEstimate(null);
                     setBridgeResult(null);
                     setStatus("idle");
@@ -353,11 +365,16 @@ export default function BridgeToArcPanel({
                   !amountLooksValid ||
                   !recipientLooksValid ||
                   !connector ||
+                  isSwitchingChain ||
                   status === "estimating" ||
                   status === "bridging"
                 }
               >
-                {status === "estimating" ? "Estimating..." : "Estimate Bridge"}
+                {isSwitchingChain
+                  ? "Switching..."
+                  : status === "estimating"
+                    ? "Estimating..."
+                    : "Estimate Bridge"}
               </Button>
               <Button
                 type="button"
