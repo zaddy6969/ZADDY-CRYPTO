@@ -1,156 +1,145 @@
-# arc-ai-wallet
+# Arc AI Wallet
 
-A modern Next.js Arc wallet product with:
+A simple, working Arc wallet app built around Arc App Kit.
 
-- wallet connect
-- Arc blue and black UI
-- AI wallet assistant
-- Arc Testnet contract integration
-- live onchain activity feed
-- responsive layout
-- separate portfolio dashboard
-- wallet health scoring
-- guided USDC transfer flow
-- homepage demo mode before wallet connection
+## What it includes
 
-Target production URL:
+- `Dashboard`
+- `Send USDC`
+- `Bridge USDC`
+- `Unified Balance`
+- `AI Assistant`
+- `Activity`
 
-- `https://arc-ai-wallet.vercel.app`
+The app keeps the current Arc AI Wallet branding and dark premium UI, but removes the old demo-heavy portfolio flow and focuses on real App Kit actions.
 
 ## Stack
 
-- Next.js `15.5.9`
-- React `19.1.1`
-- React DOM `19.1.1`
+- Next.js
+- React
+- RainbowKit
+- wagmi
+- viem
+- Arc App Kit
+- OpenAI API
 
-These versions were current on npm when I scaffolded this on `2026-05-10`.
+## Routes
 
-## Structure
+- `/` dashboard
+- `/send` send USDC on Arc Testnet with App Kit `send()`
+- `/bridge` bridge USDC into Arc with App Kit `bridge()`
+- `/unified-balance` deposit, inspect, and spend with App Kit Unified Balance
+- `/assistant` wallet copilot
+- `/activity` local App Kit history + live Arc activity
 
-- `pages/index.js` contains the arc-ai-wallet homepage
-- `pages/portfolio.js` contains the dedicated portfolio dashboard route
-- `pages/_app.js` loads the global stylesheet
-- `pages/api/chat.js` streams wallet-aware AI responses server-side
-- `pages/api/wallet-assistant.js` contains the legacy assistant route
-- `pages/api/wallet-activity.js` fetches recent Arc wallet activity
-- `components/app-providers.jsx` wires RainbowKit, wagmi, and React Query
-- `components/wallet-assistant.jsx` renders the AI wallet copilot experience
-- `components/wallet-connect.jsx` contains the Arc wallet connect UI
-- `components/portfolio/*` contains the dedicated portfolio analytics and activity panels
-- `contracts/ArcAiWalletAssistant.sol` is the onchain assistant contract
-- `scripts/deploy-assistant.js` deploys the contract to Arc Testnet and writes the frontend deployment file
-- `hardhat.config.js` configures Hardhat for Arc Testnet
-- `lib/arc-chain.js` contains the Arc Testnet chain definition
-- `lib/arc-assistant-contract.js` contains the frontend contract ABI and helpers
-- `lib/use-arc-assistant-contract.js` reads and writes the assistant contract from the browser
-- `lib/wallet-activity.js` reads recent Arc wallet activity from RPC logs
-- `lib/use-arc-wallet-activity.js` polls the wallet activity feed in the browser
-- `lib/generated/arc-assistant-deployment.json` stores the deployed contract address used by the frontend
-- `lib/use-arc-wallet-snapshot.js` shares the live wallet address and USDC balance logic
-- `lib/wallet-copilot.js` builds the wallet-aware AI prompt context, fallback logic, and insights
-- `lib/portfolio-page.js` powers portfolio analytics, activity windows, and health signals
-- `styles/globals.css` contains the Arc blue and black responsive design system
+## Environment variables
 
-## Product Overview
-
-Arc AI Wallet is designed as an AI-native wallet experience for Arc Testnet.
-The product flow is:
-
-1. Connect wallet
-2. Load Arc balances and recent activity
-3. Let Wallet Copilot analyze the portfolio
-4. Review wallet health, risk, and portfolio composition
-5. Take guided actions like sending USDC
-6. Save useful assistant responses onchain
-
-The homepage now supports a demo-ready preview mode so the product remains understandable even before wallet connection.
-
-## Run
-
-1. Copy `.env.example` to `.env.local` and set:
+Copy `.env.example` to `.env.local` and set:
 
 ```bash
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
 NEXT_PUBLIC_SITE_URL=https://arc-ai-wallet.vercel.app
+NEXT_PUBLIC_ARC_RPC_URL=https://rpc.testnet.arc.network
 OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-5.4-mini
-ARC_TESTNET_RPC_URL=https://rpc.testnet.arc.network
-ARC_TESTNET_PRIVATE_KEY=your_arc_testnet_private_key
-ARC_ASSISTANT_NAME=arc-ai-wallet
-NEXT_PUBLIC_ARC_ASSISTANT_CONTRACT_ADDRESS=
 ```
 
-2. Install dependencies:
+Notes:
+
+- `OPENAI_API_KEY` is only used server-side through `/api/ai-assistant`
+- do not put private keys or seed phrases in frontend env vars
+
+## Local development
 
 ```bash
 npm install
-```
-
-3. Compile the contract:
-
-```bash
-npm run contract:compile
-```
-
-4. Deploy it to Arc Testnet:
-
-```bash
-npm run contract:deploy:arc
-```
-
-That deploy script writes the deployed address to:
-
-```text
-lib/generated/arc-assistant-deployment.json
-```
-
-The frontend reads that file automatically, or you can override it with:
-
-```bash
-NEXT_PUBLIC_ARC_ASSISTANT_CONTRACT_ADDRESS=0x...
-```
-
-5. Start the dev server:
-
-```bash
+npm run build
 npm run dev
 ```
 
-6. Open `http://localhost:3000`
+Open:
+
+- `http://localhost:3000`
+
+## How to test
+
+### 1. Dashboard
+
+1. Open `/`
+2. Connect a wallet with MetaMask or WalletConnect
+3. Confirm the wallet address, Arc Testnet status, and USDC balance appear
+
+### 2. Send USDC
+
+1. Open `/send`
+2. Connect wallet and switch to Arc Testnet
+3. Enter a recipient and USDC amount
+4. Click `Estimate Fee`
+5. Click `Send USDC`
+6. Confirm in wallet
+7. Check the ArcScan transaction link and then confirm the action appears on `/activity`
+
+### 3. Bridge USDC
+
+1. Open `/bridge`
+2. Connect wallet
+3. Choose `Ethereum Sepolia` or `Base Sepolia`
+4. Enter amount and recipient
+5. Click `Estimate Bridge`
+6. Click `Bridge USDC to Arc`
+7. Confirm in wallet
+8. Check the step feed and ArcScan/explorer links
+9. Confirm the bridge action appears on `/activity`
+
+### 4. Unified Balance
+
+1. Open `/unified-balance`
+2. Connect wallet
+3. Click `Refresh Unified Balance`
+4. Deposit USDC from a supported source chain
+5. After confirmation, verify confirmed/pending balances update
+6. Enter an Arc recipient and spend amount
+7. Click `Spend on Arc`
+8. Confirm the spend in wallet
+9. Confirm both deposit and spend appear on `/activity`
+
+### 5. AI Assistant
+
+1. Open `/assistant`
+2. Connect wallet for live context, or use preview mode
+3. Ask:
+   - `Analyze my wallet`
+   - `How much USDC do I have?`
+   - `Show recent activity`
+   - `Explain Arc USDC gas`
+4. If `OPENAI_API_KEY` is missing, the assistant falls back to local wallet guidance
+
+### 6. Activity
+
+1. Open `/activity`
+2. Confirm local App Kit actions appear:
+   - `Send`
+   - `Bridge`
+   - `Unified Balance Deposit`
+   - `Unified Balance Spend`
+3. Confirm live Arc activity appears when recent onchain events are available
 
 ## Deployment
 
 1. Push `main` to GitHub
 2. Import the repo into Vercel
-3. Set these environment variables in Vercel:
+3. Set these Vercel environment variables:
    - `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
    - `NEXT_PUBLIC_SITE_URL`
+   - `NEXT_PUBLIC_ARC_RPC_URL`
    - `OPENAI_API_KEY`
    - `OPENAI_MODEL`
-   - `NEXT_PUBLIC_ARC_ASSISTANT_CONTRACT_ADDRESS` optional override
 4. Redeploy
 
-Production routes:
+## Arc config
 
-- `/` homepage and live demo mode
-- `/portfolio` dedicated portfolio dashboard
-
-## Notes
-
-- The wallet connect panel now uses `RainbowKit` with `wagmi`.
-- The displayed connected address is resolved with `ethers.js` and falls back to the wagmi account address if needed.
-- The dashboard fetches Arc Testnet USDC balance with `ethers.js` through the USDC ERC-20 interface at `0x3600000000000000000000000000000000000000`.
-- The activity feed reads recent Arc wallet transfers, approvals, and assistant saves directly from RPC logs.
-- The AI assistant sends wallet snapshot and recent dashboard activity to a server-side OpenAI Responses API route and falls back to local wallet intelligence when model access is unavailable.
-- The onchain assistant contract stores a user's trimmed prompt/response pair and exposes the latest saved interaction per wallet.
-- The frontend assistant panel can save the latest AI answer on Arc Testnet once the contract is deployed and the wallet is connected to Arc.
-- The portfolio route includes asset allocation, wallet flow analytics, activity export, and security scoring.
-- `OPENAI_MODEL` is optional; the default is `gpt-5.4-mini` for a faster, lower-cost assistant.
-- The Arc Testnet chain config uses:
-  - chain ID `5042002`
-  - RPC `https://rpc.testnet.arc.network`
-  - explorer `https://testnet.arcscan.app`
-- The Hardhat config uses:
-  - network `arcTestnet`
-  - RPC `https://rpc.testnet.arc.network`
-  - private key from `ARC_TESTNET_PRIVATE_KEY`
+- Chain ID: `5042002`
+- RPC: `https://rpc.testnet.arc.network`
+- Explorer: `https://testnet.arcscan.app`
+- Gas token: `USDC`
+- Faucet: `https://faucet.circle.com`

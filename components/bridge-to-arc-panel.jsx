@@ -3,6 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import { isAddress } from "viem";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import {
+  getPrimaryExplorerUrl,
+  getPrimaryTxHash
+} from "../lib/arc-app-kit";
+import {
   ARC_BRIDGE_DESTINATION,
   ARC_BRIDGE_SOURCE_OPTIONS
 } from "../lib/arc-chain";
@@ -12,6 +16,7 @@ import {
   normalizeBridgeSteps,
   summarizeBridgeFees
 } from "../lib/arc-bridge";
+import { createWalletActionRecord } from "../lib/local-activity";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { WalletConnectCta } from "./wallet-connect";
@@ -49,6 +54,7 @@ function getBridgeStatusCopy(status) {
 export default function BridgeToArcPanel({
   sectionId,
   walletSnapshot,
+  onActivitySaved,
   compact = false,
   title = "Bridge USDC to Arc",
   subtitle = "Move supported testnet USDC into Arc Testnet with Circle App Kit."
@@ -149,6 +155,22 @@ export default function BridgeToArcPanel({
 
       setBridgeResult(result);
       setStatus(result.state === "success" ? "success" : result.state || "ready");
+
+      if (result.state === "success") {
+        onActivitySaved?.(
+          createWalletActionRecord({
+            walletAddress: connectedAddress,
+            type: "Bridge",
+            amount: `${amount} USDC`,
+            chain: `${sourceChain.name} -> ${ARC_BRIDGE_DESTINATION.name}`,
+            recipient: recipientAddress,
+            status: "Confirmed",
+            txHash: getPrimaryTxHash(result),
+            explorerUrl: getPrimaryExplorerUrl(result),
+            summary: `Bridged ${amount} USDC from ${sourceChain.name} to ${ARC_BRIDGE_DESTINATION.name}.`
+          })
+        );
+      }
 
       if (result.state === "error") {
         setError("The bridge did not complete cleanly. Review the step feed below.");

@@ -1,15 +1,13 @@
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import SendUsdcComposer from "./send-usdc-composer";
-import { useArcAssistantContract } from "../lib/use-arc-assistant-contract";
-import { arcTestnet } from "../lib/arc-chain";
 import { buildWalletInsights } from "../lib/wallet-copilot";
 
 const quickPrompts = [
   "Analyze my wallet",
-  "What does this transaction do?",
   "How much USDC do I have?",
   "Show recent activity",
-  "Is my portfolio risky?"
+  "Explain Arc USDC gas",
+  "What should I do next?"
 ];
 
 function MessageBubble({ role, content }) {
@@ -32,7 +30,27 @@ function InsightCard({ item }) {
   );
 }
 
-function ActionButton({ action, onAction, disabled }) {
+function ActionButton({ action, onPrompt }) {
+  if (action.kind === "prompt") {
+    return (
+      <button
+        type="button"
+        className="button button-secondary"
+        onClick={() => onPrompt(action.prompt)}
+      >
+        {action.label}
+      </button>
+    );
+  }
+
+  if (action.kind === "internal-link") {
+    return (
+      <Link href={action.href} className="button button-secondary">
+        {action.label}
+      </Link>
+    );
+  }
+
   if (action.kind === "link") {
     return (
       <a
@@ -46,52 +64,30 @@ function ActionButton({ action, onAction, disabled }) {
     );
   }
 
-  return (
-    <button
-      type="button"
-      className="button button-secondary"
-      onClick={() => onAction(action)}
-      disabled={disabled}
-    >
-      {action.label}
-    </button>
-  );
-}
-
-function extractLastExchange(messages) {
-  const assistant = [...messages].reverse().find((item) => item.role === "assistant");
-  const user = [...messages].reverse().find((item) => item.role === "user");
-
-  return {
-    prompt: user?.content || "",
-    response: assistant?.content || ""
-  };
+  return null;
 }
 
 export default function WalletAssistant({
   walletSnapshot,
-  portfolio,
-  activity,
-  activityStatus
+  activityItems,
+  activityStatus,
+  unifiedBalance
 }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
       content:
-        "I'm your Arc wallet copilot. Ask me to analyze balances, explain a transaction, check risk, or prepare a USDC action."
+        "I’m your Arc wallet copilot. Ask about balances, recent activity, Send, Bridge, Unified Balance, or what to do next."
     }
   ]);
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
-  const [notice, setNotice] = useState("Wallet Copilot Ready");
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("Wallet Copilot Ready");
   const [actions, setActions] = useState([]);
-  const [insights, setInsights] = useState([]);
-  const [isComposerOpen, setComposerOpen] = useState(false);
   const autoAnalyzeAddressRef = useRef("");
-  const assistantContract = useArcAssistantContract();
 
-  const assistantContext = useMemo(
+  const context = useMemo(
     () => ({
       wallet: {
         address: walletSnapshot?.address || "",
@@ -100,133 +96,62 @@ export default function WalletAssistant({
         usdcBalance: walletSnapshot?.usdcBalance || "",
         balanceStatus: walletSnapshot?.balanceStatus || "idle"
       },
-      portfolio: {
-        status: portfolio?.status || "idle",
-        totalValueUsd: portfolio?.totalValueUsd ?? null,
-        assets: portfolio?.assets || []
-      },
       activity: {
         status: activityStatus,
-        items: activity || []
-      }
+        items: Array.isArray(activityItems) ? activityItems.slice(0, 12) : []
+      },
+      unifiedBalance: unifiedBalance || null
     }),
-    [activity, activityStatus, portfolio, walletSnapshot]
+    [activityItems, activityStatus, unifiedBalance, walletSnapshot]
   );
 
-  useEffect(() => {
-    setInsights(buildWalletInsights(assistantContext));
-  }, [assistantContext]);
+  const insights = useMemo(() => buildWalletInsights(context), [context]);
 
-  const streamAssistantReply = async (nextMessages, trimmed) => {
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        question: trimmed,
-        messages: nextMessages.slice(-8),
-        context: assistantContext
-      })
-    });
-
-    if (!response.ok || !response.body) {
-      throw new Error("AI assistant temporarily unavailable.");
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-    let done = false;
-
-    while (!done) {
-      const { done: readerDone, value } = await reader.read();
-
-      if (readerDone) {
-        break;
-      }
-
-      buffer += decoder.decode(value, { stream: true });
-      const frames = buffer.split("\n\n");
-      buffer = frames.pop() || "";
-
-      for (const frame of frames) {
-        const dataLine = frame
-          .split("\n")
-          .find((line) => line.startsWith("data:"));
-
-        if (!dataLine) {
-          continue;
-        }
-
-        let payload;
-
-        try {
-          payload = JSON.parse(dataLine.slice(5).trim());
-        } catch {
-          continue;
-        }
-
-        if (payload.type === "delta") {
-          setMessages((current) => {
-            const updated = [...current];
-            const last = updated[updated.length - 1];
-
-            if (last?.role === "assistant") {
-              updated[updated.length - 1] = {
-                ...last,
-                content: `${last.content || ""}${payload.delta || ""}`
-              };
-            }
-
-            return updated;
-          });
-        }
-
-        if (payload.type === "meta") {
-          setNotice(payload.notice || "Wallet Copilot Ready");
-          setInsights(
-            Array.isArray(payload.insights) && payload.insights.length
-              ? payload.insights
-              : buildWalletInsights(assistantContext)
-          );
-          setActions(Array.isArray(payload.actions) ? payload.actions : []);
-        }
-
-        if (payload.type === "done") {
-          done = true;
-          break;
-        }
-      }
-    }
-  };
-
-  const askAssistant = async (input) => {
-    const trimmed = input.trim();
+  const askAssistant = async (nextQuestion) => {
+    const trimmed = String(nextQuestion || "").trim();
 
     if (!trimmed || loading) {
       return;
     }
 
     const nextMessages = [...messages, { role: "user", content: trimmed }];
-    setMessages([...nextMessages, { role: "assistant", content: "" }]);
+    setMessages(nextMessages);
     setQuestion("");
-    setError("");
     setLoading(true);
+    setError("");
 
     try {
-      await streamAssistantReply(nextMessages, trimmed);
-    } catch {
-      setMessages((current) =>
-        current.filter((item, index) => {
-          if (index < current.length - 1) {
-            return true;
-          }
-
-          return item.content;
+      const response = await fetch("/api/ai-assistant", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          question: trimmed,
+          messages: nextMessages.slice(-6),
+          context,
+          stream: false
         })
-      );
-      setError("Wallet Copilot is temporarily unavailable. Please try again shortly.");
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error || "Wallet Copilot is unavailable.");
+      }
+
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content:
+            payload.answer ||
+            "I couldn't generate a wallet answer right now. Please try again."
+        }
+      ]);
+      setNotice(payload.notice || "Wallet Copilot Ready");
+      setActions(Array.isArray(payload.actions) ? payload.actions : []);
+    } catch {
+      setError("Wallet Copilot is temporarily unavailable. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -239,9 +164,7 @@ export default function WalletAssistant({
       autoAnalyzeAddressRef.current !== walletSnapshot.address
     ) {
       autoAnalyzeAddressRef.current = walletSnapshot.address;
-      setTimeout(() => {
-        askAssistant("Analyze my wallet");
-      }, 120);
+      void askAssistant("Analyze my wallet");
     }
   }, [walletSnapshot?.address, walletSnapshot?.isSignedIn]);
 
@@ -250,50 +173,15 @@ export default function WalletAssistant({
     await askAssistant(question);
   };
 
-  const handleAction = async (action) => {
-    if (action.kind === "prompt" && action.prompt) {
-      await askAssistant(action.prompt);
-      return;
-    }
-
-    if (action.kind === "composer" && action.composer === "send-usdc") {
-      setComposerOpen(true);
-    }
-  };
-
-  const handleSaveLatest = async () => {
-    const { prompt, response } = extractLastExchange(messages);
-    setError("");
-
-    try {
-      await assistantContract.saveInteraction({
-        prompt,
-        response
-      });
-    } catch (saveError) {
-      setError(
-        saveError instanceof Error
-          ? saveError.message
-          : "Unable to save the latest answer on Arc."
-      );
-    }
-  };
-
   return (
-    <section className="card" id="section-assistant">
+    <section className="card">
       <div className="section-heading">
         <div>
-          <p className="section-kicker">Wallet Copilot</p>
-          <h2>AI-powered wallet intelligence built on Arc</h2>
+          <p className="section-kicker">AI Assistant</p>
+          <h2>Simple wallet guidance built around Arc App Kit</h2>
         </div>
         <span className="status-badge">
-          {loading
-            ? "Thinking"
-            : walletSnapshot?.isSignedIn
-              ? walletSnapshot?.onArc
-                ? "Arc ready"
-                : "Switch network"
-              : "Preview mode"}
+          {loading ? "Thinking" : walletSnapshot?.isSignedIn ? "Live wallet mode" : "Preview mode"}
         </span>
       </div>
 
@@ -303,37 +191,25 @@ export default function WalletAssistant({
           <strong>{walletSnapshot?.address || "No wallet connected"}</strong>
           <small>
             {walletSnapshot?.onArc
-              ? "Arc Testnet connected"
-              : "Switch to Arc Testnet for full AI actions"}
+              ? "Arc Testnet ready"
+              : "Connect and switch to Arc for full wallet actions"}
           </small>
         </div>
         <div className="summary-card">
-          <span className="field-label">Visible balance</span>
-          <strong>{walletSnapshot?.usdcBalance || "Balance syncing"}</strong>
-          <small>
-            {walletSnapshot?.balanceStatus === "ready"
-              ? "Live wallet snapshot"
-              : "Waiting for Arc balance data"}
-          </small>
+          <span className="field-label">USDC balance</span>
+          <strong>{walletSnapshot?.usdcBalance || "Syncing..."}</strong>
+          <small>Live from your connected Arc wallet snapshot</small>
         </div>
         <div className="summary-card">
-          <span className="field-label">Recent activity</span>
-          <strong>{Array.isArray(activity) ? activity.length : 0} events</strong>
-          <small>
-            {activityStatus === "ready"
-              ? "Loaded from Arc RPC"
-              : "Fetching latest Arc wallet feed"}
-          </small>
+          <span className="field-label">Unified Balance</span>
+          <strong>
+            {unifiedBalance?.totalConfirmedBalance || "0.00"} USDC
+          </strong>
+          <small>Confirmed across your supported testnet chains</small>
         </div>
       </div>
 
-      {notice ? <p className="helper-copy">{notice}</p> : null}
-      {!walletSnapshot?.isSignedIn ? (
-        <p className="helper-copy">
-          Copilot can answer in preview mode right now. Connect your wallet for live
-          Arc balances, wallet activity, and onchain actions.
-        </p>
-      ) : null}
+      <p className="helper-copy">{notice}</p>
 
       <div className="insight-grid">
         {insights.map((item) => (
@@ -361,8 +237,7 @@ export default function WalletAssistant({
             <ActionButton
               key={action.id}
               action={action}
-              onAction={handleAction}
-              disabled={loading}
+              onPrompt={askAssistant}
             />
           ))}
         </div>
@@ -376,13 +251,6 @@ export default function WalletAssistant({
             content={message.content}
           />
         ))}
-
-        {loading ? (
-          <div className="assistant-message assistant-message-assistant">
-            <span className="field-label">Wallet Copilot</span>
-            <p>Analyzing your Arc wallet context...</p>
-          </div>
-        ) : null}
       </div>
 
       <form className="assistant-form" onSubmit={handleSubmit}>
@@ -390,103 +258,22 @@ export default function WalletAssistant({
           className="assistant-input"
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
-          placeholder="Ask about your wallet activity..."
+          placeholder="Ask about Send, Bridge, Unified Balance, or your wallet activity..."
           rows={4}
         />
         <div className="assistant-form-row">
           <span className="helper-copy">
-            Ask things like "What does this transaction do?" or "How much USDC do I have?"
+            Ask things like “Analyze my wallet” or “Explain Arc USDC gas.”
           </span>
-          <button
-            type="submit"
-            className="button button-primary"
-            disabled={loading}
-          >
+          <button type="submit" className="button button-primary" disabled={loading}>
             {loading ? "Thinking..." : "Ask Copilot"}
           </button>
         </div>
       </form>
 
-      <SendUsdcComposer
-        open={isComposerOpen}
-        walletAddress={walletSnapshot?.address}
-        onClose={() => setComposerOpen(false)}
-        onTransactionSubmitted={(hash) => {
-          setNotice("USDC transfer submitted to your wallet.");
-          setActions((current) => [
-            {
-              id: "view-transfer",
-              label: "View submitted transfer",
-              kind: "link",
-              href: `${arcTestnet.blockExplorers.default.url}/tx/${hash}`
-            },
-            ...current
-          ]);
-        }}
-      />
-
-      <div className="assistant-actions-panel">
-        <div className="summary-card">
-          <span className="field-label">Onchain memory</span>
-          <strong>
-            {assistantContract.contractStatus === "ready"
-              ? assistantContract.assistantName || "Arc AI Wallet"
-              : "Contract syncing"}
-          </strong>
-          <small>
-            {assistantContract.contractStatus === "ready"
-              ? `${assistantContract.interactionCount} saved interactions on Arc`
-              : "The assistant contract is loading from Arc Testnet"}
-          </small>
-        </div>
-
-        <div className="wallet-actions">
-          <button
-            type="button"
-            className="button button-primary"
-            onClick={handleSaveLatest}
-            disabled={
-              !walletSnapshot?.isSignedIn ||
-              !walletSnapshot?.onArc ||
-              assistantContract.saveStatus === "awaiting-wallet" ||
-              assistantContract.saveStatus === "confirming" ||
-              loading
-            }
-          >
-            {assistantContract.saveStatus === "awaiting-wallet"
-              ? "Confirm in wallet..."
-              : assistantContract.saveStatus === "confirming"
-                ? "Saving on Arc..."
-                : !walletSnapshot?.isSignedIn
-                  ? "Connect wallet to save on Arc"
-                  : "Save latest answer on Arc"}
-          </button>
-          {assistantContract.contractExplorerUrl ? (
-            <a
-              href={assistantContract.contractExplorerUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="button button-secondary"
-            >
-              View assistant contract
-            </a>
-          ) : null}
-        </div>
-      </div>
-
-      {assistantContract.latestInteraction ? (
-        <div className="empty-state empty-state-compact">
-          <strong>Latest saved copilot memory</strong>
-          <p>
-            Stored on {assistantContract.latestInteraction.createdAtLabel}. Prompt:{" "}
-            {assistantContract.latestInteraction.prompt}
-          </p>
-        </div>
-      ) : null}
-
       {error ? (
         <div className="empty-state empty-state-compact">
-          <strong>Wallet Copilot needs attention.</strong>
+          <strong>AI assistant unavailable</strong>
           <p>{error}</p>
         </div>
       ) : null}

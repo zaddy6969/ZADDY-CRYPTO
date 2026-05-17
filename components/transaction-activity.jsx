@@ -6,55 +6,63 @@ function shortenValue(value) {
   return `${value.slice(0, 8)}...${value.slice(-6)}`;
 }
 
-function ActivityRow({ item }) {
+function ActivityCard({ item }) {
   return (
     <article className="activity-card">
       <div className="activity-card-head">
         <div className="activity-card-copy">
           <strong>{item.type}</strong>
-          <span>{item.summary}</span>
+          <span>{item.summary || "Wallet activity recorded."}</span>
         </div>
         <div className="activity-card-amount">
           <strong>{item.amount || "Tracked event"}</strong>
-          <span>{item.token || "Contract activity"}</span>
+          <span>{item.chain || "Arc Testnet"}</span>
         </div>
       </div>
       <div className="activity-card-meta">
-        <span>{item.timeLabel}</span>
-        <span>Block {item.blockNumber}</span>
-        <span>{item.txHashShort}</span>
+        <span>{item.timeLabel || "Recently"}</span>
+        <span>{item.status || "Confirmed"}</span>
+        {item.txHashShort ? <span>{item.txHashShort}</span> : null}
       </div>
       <div className="activity-card-footer">
-        <span>{shortenValue(item.contract)}</span>
-        <a href={item.explorerUrl} target="_blank" rel="noreferrer">
-          View on ArcScan
-        </a>
+        <span>
+          {item.recipient
+            ? `Recipient: ${shortenValue(item.recipient)}`
+            : item.source === "app"
+              ? "Saved from in-app action history"
+              : "Tracked from Arc onchain activity"}
+        </span>
+        {item.explorerUrl ? (
+          <a href={item.explorerUrl} target="_blank" rel="noreferrer">
+            View on explorer
+          </a>
+        ) : null}
       </div>
     </article>
   );
 }
 
 export default function TransactionActivity({
-  isSignedIn,
-  activity,
-  status,
-  error
+  walletSnapshot,
+  items,
+  liveStatus,
+  liveError
 }) {
+  const isSignedIn = walletSnapshot?.isSignedIn;
+
   return (
-    <section className="card" id="section-activity">
+    <section className="card">
       <div className="section-heading">
         <div>
-          <p className="section-kicker">Wallet Feed</p>
-          <h2>Recent Arc wallet activity</h2>
+          <p className="section-kicker">Activity</p>
+          <h2>Wallet actions and Arc activity</h2>
         </div>
         <span className="status-badge">
           {!isSignedIn
             ? "Wallet required"
-            : status === "loading" || status === "refreshing"
-              ? "Loading"
-              : status === "error"
-                ? "Unavailable"
-                : `${activity.length} events`}
+            : liveStatus === "loading" || liveStatus === "refreshing"
+              ? "Syncing"
+              : `${items.length} items`}
         </span>
       </div>
 
@@ -62,32 +70,37 @@ export default function TransactionActivity({
         <div className="empty-state">
           <strong>Connect wallet to view activity.</strong>
           <p>
-            Recent Arc transfers and approvals appear here after the wallet is
-            connected and onchain activity loads successfully.
+            This page combines local App Kit action history with recent Arc
+            onchain activity for the connected wallet.
           </p>
         </div>
-      ) : status === "loading" && activity.length === 0 ? (
+      ) : liveStatus === "loading" && items.length === 0 ? (
         <div className="empty-state">
           <strong>Loading activity...</strong>
-          <p>Fetching the latest Arc wallet transactions safely.</p>
+          <p>Fetching recent Arc activity and local wallet actions.</p>
         </div>
-      ) : status === "error" ? (
+      ) : items.length === 0 ? (
         <div className="empty-state">
-          <strong>Activity temporarily unavailable.</strong>
-          <p>{error || "Please try again later."}</p>
-        </div>
-      ) : activity.length === 0 ? (
-        <div className="empty-state">
-          <strong>No transactions found.</strong>
-          <p>No supported Arc activity was found in the latest safe lookback window.</p>
+          <strong>No wallet actions yet.</strong>
+          <p>
+            Send, bridge, or Unified Balance actions will appear here after you
+            confirm them in your wallet.
+          </p>
         </div>
       ) : (
         <div className="activity-feed">
-          {activity.map((item) => (
-            <ActivityRow key={item.id} item={item} />
+          {items.map((item) => (
+            <ActivityCard key={item.id} item={item} />
           ))}
         </div>
       )}
+
+      {liveStatus === "error" ? (
+        <div className="empty-state empty-state-compact">
+          <strong>Live Arc activity temporarily unavailable.</strong>
+          <p>{liveError || "Please try again later."}</p>
+        </div>
+      ) : null}
     </section>
   );
 }

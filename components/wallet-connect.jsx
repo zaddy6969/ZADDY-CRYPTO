@@ -134,8 +134,8 @@ export default function WalletConnect({ walletSnapshot }) {
               <div className="empty-state">
                 <strong>Connect wallet to continue.</strong>
                 <p>
-                  Use your wallet to sign in and unlock portfolio balances,
-                  recent Arc activity, and AI wallet assistance.
+                  Use your wallet to sign in and unlock Arc USDC balance,
+                  App Kit actions, recent activity, and AI wallet assistance.
                 </p>
                 <button
                   type="button"
@@ -207,8 +207,9 @@ export default function WalletConnect({ walletSnapshot }) {
 
                 {isSignedIn ? (
                   <p className="helper-copy">
-                    Signed in with wallet. The dashboard below is protected by
-                    your active wallet connection.
+                    Signed in with wallet. You can now use Send, Bridge,
+                    Unified Balance, AI Assistant, and Activity routes with live
+                    wallet context.
                   </p>
                 ) : null}
               </>

@@ -6,7 +6,11 @@ import { Badge } from "./ui/badge";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard" },
-  { href: "/portfolio", label: "Portfolio" }
+  { href: "/send", label: "Send USDC" },
+  { href: "/bridge", label: "Bridge USDC" },
+  { href: "/unified-balance", label: "Unified Balance" },
+  { href: "/assistant", label: "AI Assistant" },
+  { href: "/activity", label: "Activity" }
 ];
 
 export default function AppNav() {
@@ -15,7 +19,7 @@ export default function AppNav() {
   return (
     <header className="sticky top-4 z-40">
       <div className="mx-auto flex w-full max-w-[1120px] items-center justify-between gap-4 rounded-[26px] border border-white/10 bg-[rgba(8,13,24,0.78)] px-4 py-3 shadow-glass backdrop-blur-xl md:px-5">
-        <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5">
             <img
               src="/arc-ai-wallet-logo.png"
@@ -31,7 +35,7 @@ export default function AppNav() {
               Built on {arcTestnet.name}
             </p>
           </div>
-        </div>
+        </Link>
 
         <nav className="hidden items-center gap-2 md:flex">
           {NAV_ITEMS.map((item) => {
@@ -55,17 +59,6 @@ export default function AppNav() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Link
-            href="/portfolio"
-            className={cn(
-              "rounded-2xl border px-4 py-2 text-sm font-semibold transition",
-              router.pathname === "/portfolio"
-                ? "border-sky-300/30 bg-sky-400/10 text-sky-100"
-                : "border-white/10 bg-white/5 text-white hover:border-sky-300/30 hover:bg-white/8"
-            )}
-          >
-            Open Portfolio Dashboard
-          </Link>
           <Badge tone="blue">Live on Arc Testnet</Badge>
         </div>
       </div>
