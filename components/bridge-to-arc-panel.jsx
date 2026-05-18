@@ -126,11 +126,11 @@ export default function BridgeToArcPanel({
       const nextEstimate = await bridgeClient.kit.estimateBridge({
         from: {
           adapter: bridgeClient.adapter,
-          chain: bridgeClient.chainLookup[sourceChain.appKitChain]
+          chain: sourceChain.appKitChain
         },
         to: {
           adapter: bridgeClient.adapter,
-          chain: bridgeClient.chainLookup[ARC_BRIDGE_DESTINATION.appKitChain],
+          chain: ARC_BRIDGE_DESTINATION.appKitChain,
           recipientAddress
         },
         amount
@@ -163,11 +163,11 @@ export default function BridgeToArcPanel({
       const result = await bridgeClient.kit.bridge({
         from: {
           adapter: bridgeClient.adapter,
-          chain: bridgeClient.chainLookup[sourceChain.appKitChain]
+          chain: sourceChain.appKitChain
         },
         to: {
           adapter: bridgeClient.adapter,
-          chain: bridgeClient.chainLookup[ARC_BRIDGE_DESTINATION.appKitChain],
+          chain: ARC_BRIDGE_DESTINATION.appKitChain,
           recipientAddress
         },
         amount
