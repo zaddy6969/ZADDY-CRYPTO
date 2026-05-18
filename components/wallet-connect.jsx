@@ -10,6 +10,19 @@ function truncateAddress(address) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
+function formatUsdBalance(balance) {
+  const numeric = Number(String(balance || "").replace(/[^\d.-]/g, ""));
+
+  if (!Number.isFinite(numeric)) {
+    return "$0.00";
+  }
+
+  return `$${new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4
+  }).format(numeric)}`;
+}
+
 export function WalletConnectCta({ className = "hero-actions" }) {
   return (
     <ConnectButton.Custom>
@@ -166,7 +179,7 @@ export default function WalletConnect({ walletSnapshot, onReceiveClick }) {
                       {balanceStatus === "loading" || balanceStatus === "refreshing"
                         ? "Loading..."
                         : balanceStatus === "ready"
-                          ? usdcBalance
+                          ? formatUsdBalance(usdcBalance)
                           : "Syncing..."}
                     </strong>
                     <small>

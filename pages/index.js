@@ -1,52 +1,27 @@
 import Head from "next/head";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AppShell from "../components/app-shell";
-import BridgeToArcPanel from "../components/bridge-to-arc-panel";
 import SendUsdcPanel from "../components/send-usdc-panel";
 import TransactionActivity from "../components/transaction-activity";
+import WalletAiDrawer from "../components/wallet-ai-drawer";
+import WalletLoginScreen from "../components/wallet-login-screen";
+import WalletSidebar from "../components/wallet-sidebar";
 import ReceiveModal from "../components/wallet/ReceiveModal";
-import WalletAssistant from "../components/wallet-assistant";
-import WalletConnect, { WalletConnectCta } from "../components/wallet-connect";
+import WalletConnect from "../components/wallet-connect";
 import { arcTestnet } from "../lib/arc-chain";
 import { useWalletAppState } from "../lib/use-wallet-app-state";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://arc-ai-wallet.vercel.app";
+const SUPPORTED_VIEWS = new Set(["send", "activity"]);
 
-const DASHBOARD_TABS = [
-  {
-    id: "send",
-    label: "Send",
-    kicker: "App Kit Send",
-    body: "Transfer USDC on Arc Testnet with your connected wallet."
-  },
-  {
-    id: "bridge",
-    label: "Bridge",
-    kicker: "App Kit Bridge",
-    body: "Move supported testnet USDC into Arc Testnet."
-  },
-  {
-    id: "assistant",
-    label: "AI Assistant",
-    kicker: "Wallet Copilot",
-    body: "Ask real questions about Arc, USDC gas, activity, and next steps."
-  },
-  {
-    id: "activity",
-    label: "Activity",
-    kicker: "Wallet History",
-    body: "Track real send, receive, and bridge events with explorer links."
-  }
-];
-
-function getTabFromHash() {
-  if (typeof window === "undefined") {
-    return "send";
-  }
-
-  const hash = String(window.location.hash || "").replace(/^#/, "");
-  return DASHBOARD_TABS.some((tab) => tab.id === hash) ? hash : "send";
+function WelcomeOverlay() {
+  return (
+    <div className="welcome-overlay" role="status" aria-live="polite">
+      <span>Welcome to</span>
+      <strong>AI Powered Wallet Built on Arc</strong>
+    </div>
+  );
 }
 
 export default function Home() {
@@ -57,75 +32,66 @@ export default function Home() {
     liveActivityError,
     saveLocalActivity
   } = useWalletAppState();
-  const [activeTab, setActiveTab] = useState("send");
+  const [activeView, setActiveView] = useState("send");
   const [receiveOpen, setReceiveOpen] = useState(false);
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const welcomedAddressRef = useRef("");
 
   useEffect(() => {
-    const syncFromHash = () => {
-      setActiveTab(getTabFromHash());
+    const syncViewFromHash = () => {
+      const nextHash = String(window.location.hash || "").replace(/^#/, "");
+
+      if (SUPPORTED_VIEWS.has(nextHash)) {
+        setActiveView(nextHash);
+      }
     };
 
-    syncFromHash();
-    window.addEventListener("hashchange", syncFromHash);
+    syncViewFromHash();
+    window.addEventListener("hashchange", syncViewFromHash);
 
-    return () => {
-      window.removeEventListener("hashchange", syncFromHash);
-    };
+    return () => window.removeEventListener("hashchange", syncViewFromHash);
   }, []);
 
-  const activeTabMeta = useMemo(
-    () => DASHBOARD_TABS.find((tab) => tab.id === activeTab) || DASHBOARD_TABS[0],
-    [activeTab]
-  );
+  useEffect(() => {
+    if (
+      walletSnapshot.isSignedIn &&
+      walletSnapshot.address &&
+      welcomedAddressRef.current !== walletSnapshot.address
+    ) {
+      welcomedAddressRef.current = walletSnapshot.address;
+      setShowWelcome(true);
+      const timeoutId = window.setTimeout(() => setShowWelcome(false), 1500);
+      return () => window.clearTimeout(timeoutId);
+    }
 
-  const setDashboardTab = (tabId) => {
-    setActiveTab(tabId);
+    return undefined;
+  }, [walletSnapshot.address, walletSnapshot.isSignedIn]);
+
+  const handleSelectView = (view) => {
+    setActiveView(view);
 
     if (typeof window !== "undefined") {
-      const nextUrl = `${window.location.pathname}#${tabId}`;
-      window.history.replaceState(null, "", nextUrl);
+      window.history.replaceState(null, "", `/#${view}`);
     }
   };
 
-  const renderActivePanel = () => {
-    if (activeTab === "bridge") {
-      return (
-        <BridgeToArcPanel
-          sectionId="dashboard-bridge"
-          walletSnapshot={walletSnapshot}
-          onActivitySaved={saveLocalActivity}
-        />
-      );
-    }
-
-    if (activeTab === "assistant") {
-      return (
-        <WalletAssistant
-          walletSnapshot={walletSnapshot}
-          activityItems={mergedActivity}
-          activityStatus={liveActivityStatus}
-        />
-      );
-    }
-
-    if (activeTab === "activity") {
-      return (
-        <TransactionActivity
-          walletSnapshot={walletSnapshot}
-          items={mergedActivity}
-          liveStatus={liveActivityStatus}
-          liveError={liveActivityError}
-        />
-      );
-    }
-
+  if (!walletSnapshot.isSignedIn) {
     return (
-      <SendUsdcPanel
-        walletSnapshot={walletSnapshot}
-        onActivitySaved={saveLocalActivity}
-      />
+      <>
+        <Head>
+          <title>Arc AI Wallet | Built on Arc</title>
+          <meta
+            name="description"
+            content="Send, bridge, and manage USDC on Arc with AI."
+          />
+          <meta name="theme-color" content="#070b14" />
+          <link rel="canonical" href={SITE_URL} />
+        </Head>
+        <WalletLoginScreen />
+      </>
     );
-  };
+  }
 
   return (
     <>
@@ -133,66 +99,27 @@ export default function Home() {
         <title>Arc AI Wallet | Built on Arc</title>
         <meta
           name="description"
-          content="Simple AI-powered wallet dashboard for Arc Testnet."
+          content="Send, receive, and understand USDC wallet activity on Arc with AI."
         />
         <meta name="theme-color" content="#070b14" />
         <link rel="canonical" href={SITE_URL} />
       </Head>
 
       <AppShell>
-        <section className="hero-card">
-          <p className="section-kicker">Dashboard</p>
-          <h1>Arc AI Wallet</h1>
-          <p className="hero-subtitle">
-            A simple, working wallet app for Arc Testnet powered by Arc App Kit.
-          </p>
+        {showWelcome ? <WelcomeOverlay /> : null}
+
+        <section className="wallet-dashboard-hero card">
+          <div>
+            <p className="section-kicker">Arc AI Wallet</p>
+            <h1>Welcome back</h1>
+            <p>
+              A focused USDC wallet for Arc: send, receive, review activity, and
+              ask the copilot when a blockchain action needs plain language.
+            </p>
+          </div>
           <div className="hero-meta">
             <span>{arcTestnet.name}</span>
-            <span>Chain ID {arcTestnet.id}</span>
             <span>USDC gas</span>
-          </div>
-          <div className="hero-actions">
-            <WalletConnectCta className="hero-actions-inline" />
-            {walletSnapshot.isSignedIn ? (
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => setReceiveOpen(true)}
-              >
-                Receive
-              </button>
-            ) : null}
-          </div>
-          <div className="wallet-summary-grid">
-            <div className="wallet-summary-item">
-              <span className="field-label">Connected wallet</span>
-              <strong>{walletSnapshot.address || "No wallet connected"}</strong>
-            </div>
-            <div className="wallet-summary-item">
-              <span className="field-label">Arc status</span>
-              <strong>
-                {walletSnapshot.isSignedIn
-                  ? walletSnapshot.onArc
-                    ? "Arc Testnet ready"
-                    : "Wrong network"
-                  : "Connect wallet"}
-              </strong>
-            </div>
-            <div className="wallet-summary-item">
-              <span className="field-label">USDC balance</span>
-              <strong>{walletSnapshot.usdcBalance || "Syncing..."}</strong>
-            </div>
-            <div className="wallet-summary-item">
-              <span className="field-label">Recent activity</span>
-              <strong>
-                {walletSnapshot.isSignedIn ? `${mergedActivity.length} events` : "Wallet required"}
-              </strong>
-              <small>
-                {liveActivityStatus === "loading" || liveActivityStatus === "refreshing"
-                  ? "Syncing sent, received, and bridge activity from Arc"
-                  : "Real send, receive, and bridge events from your wallet feed"}
-              </small>
-            </div>
           </div>
         </section>
 
@@ -201,54 +128,63 @@ export default function Home() {
           onReceiveClick={() => setReceiveOpen(true)}
         />
 
-        <section className="card" id="dashboard-actions">
-          <div className="section-heading">
-            <div>
-              <p className="section-kicker">Wallet Actions</p>
-              <h2>Everything in one dashboard</h2>
-            </div>
-            <span className="status-badge">{activeTabMeta.kicker}</span>
-          </div>
-
-          <div className="dashboard-tab-row" role="tablist" aria-label="Dashboard actions">
-            {DASHBOARD_TABS.map((tab) => {
-              const isActive = tab.id === activeTab;
-
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  aria-controls={`panel-${tab.id}`}
-                  className={`dashboard-tab ${isActive ? "dashboard-tab-active" : ""}`}
-                  onClick={() => setDashboardTab(tab.id)}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="empty-state empty-state-compact">
-            <strong>{activeTabMeta.label}</strong>
-            <p>{activeTabMeta.body}</p>
-          </div>
-
-          <div
-            id={`panel-${activeTabMeta.id}`}
-            role="tabpanel"
-            className="dashboard-tab-panel"
-          >
-            {renderActivePanel()}
-          </div>
+        <section className="dashboard-problem-solution card">
+          <article>
+            <span className="field-label">Problem</span>
+            <strong>
+              Crypto wallets are still complex for normal users. Sending,
+              receiving, checking balance, and understanding wallet activity feels
+              confusing.
+            </strong>
+          </article>
+          <article>
+            <span className="field-label">Solution</span>
+            <strong>
+              This AI Powered Wallet built on Arc makes wallet actions simple with
+              wallet connection, USDC balance, receive QR, send flow, transaction
+              activity, and AI guidance in one clean interface.
+            </strong>
+          </article>
         </section>
+
+        <div className="wallet-workspace">
+          <WalletSidebar
+            activeView={activeView}
+            onSelect={handleSelectView}
+            onReceive={() => setReceiveOpen(true)}
+          />
+
+          <div className="wallet-main-panel">
+            {activeView === "activity" ? (
+              <TransactionActivity
+                walletSnapshot={walletSnapshot}
+                items={mergedActivity}
+                liveStatus={liveActivityStatus}
+                liveError={liveActivityError}
+              />
+            ) : (
+              <SendUsdcPanel
+                walletSnapshot={walletSnapshot}
+                onActivitySaved={saveLocalActivity}
+              />
+            )}
+          </div>
+        </div>
 
         <ReceiveModal
           open={receiveOpen}
           onClose={() => setReceiveOpen(false)}
           address={walletSnapshot.address}
           networkLabel={arcTestnet.name}
+        />
+
+        <WalletAiDrawer
+          open={assistantOpen}
+          onOpen={() => setAssistantOpen(true)}
+          onClose={() => setAssistantOpen(false)}
+          walletSnapshot={walletSnapshot}
+          activityItems={mergedActivity}
+          activityStatus={liveActivityStatus}
         />
       </AppShell>
     </>

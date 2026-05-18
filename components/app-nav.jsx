@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { arcTestnet } from "../lib/arc-chain";
-import { Badge } from "./ui/badge";
 
 export default function AppNav() {
   return (
@@ -24,10 +23,7 @@ export default function AppNav() {
           </div>
         </Link>
 
-        <div className="flex items-center gap-3">
-          <Badge tone="blue">Single-page dashboard</Badge>
-          <Badge tone="violet">Live on Arc Testnet</Badge>
-        </div>
+        <span className="status-badge status-good">Live on Arc Testnet</span>
       </div>
     </header>
   );

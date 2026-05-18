@@ -94,7 +94,7 @@ export default function TransactionActivity({
         </div>
       ) : items.length === 0 ? (
         <div className="empty-state">
-          <strong>No wallet actions yet.</strong>
+          <strong>No transaction activity found yet.</strong>
           <p>
             Real sent, received, and bridge events will appear here after your
             wallet records them onchain.

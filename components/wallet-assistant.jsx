@@ -3,11 +3,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { buildWalletInsights } from "../lib/wallet-copilot";
 
 const quickPrompts = [
-  "Analyze my wallet",
-  "How much USDC do I have?",
-  "Show recent activity",
-  "Explain Arc USDC gas",
-  "What should I do next?"
+  "Show my connected wallet",
+  "Check my USDC balance",
+  "Show my portfolio",
+  "Show previous activity",
+  "Explain how to send USDC",
+  "Explain how this wallet solves user problems"
 ];
 
 function MessageBubble({ role, content }) {

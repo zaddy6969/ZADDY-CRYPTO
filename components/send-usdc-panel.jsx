@@ -37,6 +37,11 @@ export default function SendUsdcPanel({ walletSnapshot, onActivitySaved }) {
   const recipientValid = Boolean(recipient) && isAddress(recipient);
   const amountValue = Number(amount || 0);
   const amountValid = Number.isFinite(amountValue) && amountValue > 0;
+  const availableBalance = Number(
+    String(walletSnapshot?.usdcBalance || "").replace(/[^\d.-]/g, "")
+  );
+  const hasKnownBalance = Number.isFinite(availableBalance);
+  const hasEnoughBalance = !hasKnownBalance || amountValue <= availableBalance;
   const isSignedIn = walletSnapshot?.isSignedIn;
   const needsArcSwitch = isSignedIn && chainId !== arcTestnet.id;
 
@@ -87,6 +92,11 @@ export default function SendUsdcPanel({ walletSnapshot, onActivitySaved }) {
       return;
     }
 
+    if (!hasEnoughBalance) {
+      setError("Amount exceeds your available USDC balance.");
+      return;
+    }
+
     setStatus("estimating");
     setError("");
     setEstimateLabel("");
@@ -121,6 +131,11 @@ export default function SendUsdcPanel({ walletSnapshot, onActivitySaved }) {
 
     if (!amountValid) {
       setError("Enter a valid USDC amount.");
+      return;
+    }
+
+    if (!hasEnoughBalance) {
+      setError("Amount exceeds your available USDC balance.");
       return;
     }
 
@@ -235,6 +250,8 @@ export default function SendUsdcPanel({ walletSnapshot, onActivitySaved }) {
                   ? "Enter a valid wallet address before sending."
                   : !amountValid
                     ? "Enter a valid USDC amount to continue."
+                    : !hasEnoughBalance
+                      ? "Amount exceeds your available USDC balance."
                     : needsArcSwitch
                       ? "Your wallet needs to switch to Arc Testnet before App Kit can send."
                       : "This will submit a real Arc Testnet USDC transfer after wallet confirmation."}

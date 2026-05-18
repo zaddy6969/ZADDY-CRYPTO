@@ -67,6 +67,308 @@ button:disabled {
   margin: 0 auto;
 }
 
+.login-page-shell {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 20% 12%, rgba(102, 182, 255, 0.22), transparent 28%),
+    radial-gradient(circle at 80% 8%, rgba(142, 107, 255, 0.2), transparent 30%),
+    linear-gradient(145deg, #050811, #081122 48%, #04070f);
+  background-size: 130% 130%;
+  animation: loginGradientShift 14s ease-in-out infinite;
+}
+
+.login-blob {
+  position: absolute;
+  width: min(42vw, 420px);
+  height: min(42vw, 420px);
+  border-radius: 999px;
+  filter: blur(28px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.login-blob-left {
+  left: -8%;
+  bottom: -12%;
+  background: rgba(64, 152, 255, 0.24);
+  animation: loginBlobLeft 12s ease-in-out infinite;
+}
+
+.login-blob-right {
+  right: -8%;
+  top: -14%;
+  background: rgba(144, 92, 255, 0.22);
+  animation: loginBlobRight 14s ease-in-out infinite;
+}
+
+.login-card-premium {
+  position: relative;
+  isolation: isolate;
+  width: min(520px, 100%);
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  padding: clamp(24px, 5vw, 38px);
+  border-radius: 34px;
+  border: 1px solid rgba(158, 184, 255, 0.18);
+  background: rgba(10, 16, 29, 0.74);
+  box-shadow:
+    0 30px 100px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(24px);
+  text-align: center;
+  animation: loginCardReveal 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.login-card-premium::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    120deg,
+    rgba(102, 182, 255, 0.08),
+    rgba(102, 182, 255, 0.56),
+    rgba(142, 107, 255, 0.52),
+    rgba(102, 182, 255, 0.08)
+  );
+  background-size: 220% 220%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: loginBorderFlow 6s linear infinite;
+}
+
+.login-brand-mark {
+  width: min(260px, 72vw);
+  overflow: hidden;
+  border-radius: 26px;
+  box-shadow: 0 22px 52px rgba(48, 119, 255, 0.2);
+}
+
+.login-brand-mark img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.login-built-label {
+  margin: 4px 0 0;
+  color: #b8cfff;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: 0.72rem;
+}
+
+.login-card-premium h1 {
+  margin: 0;
+  font-size: clamp(1.7rem, 5vw, 2.35rem);
+  letter-spacing: -0.05em;
+}
+
+.login-tagline,
+.login-description {
+  margin: 0;
+  line-height: 1.7;
+}
+
+.login-tagline {
+  font-size: 1.02rem;
+  color: #dfeaff;
+  font-weight: 700;
+}
+
+.login-description {
+  max-width: 390px;
+  color: var(--muted);
+}
+
+.login-connect-button {
+  min-width: min(280px, 100%);
+  margin-top: 4px;
+  box-shadow: 0 18px 42px rgba(102, 182, 255, 0.25);
+}
+
+.login-connect-button:hover {
+  box-shadow: 0 22px 58px rgba(102, 182, 255, 0.34);
+}
+
+.login-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: grid;
+  place-content: center;
+  gap: 10px;
+  text-align: center;
+  background: rgba(3, 6, 13, 0.82);
+  backdrop-filter: blur(18px);
+  animation: welcomeFade 1.5s ease both;
+}
+
+.welcome-overlay span {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.76rem;
+}
+
+.welcome-overlay strong {
+  font-size: clamp(1.4rem, 4vw, 2.5rem);
+  letter-spacing: -0.05em;
+}
+
+.wallet-dashboard-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.wallet-dashboard-hero h1 {
+  margin: 6px 0 8px;
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  letter-spacing: -0.05em;
+}
+
+.wallet-dashboard-hero p:last-child {
+  max-width: 650px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.dashboard-problem-solution {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dashboard-problem-solution article {
+  display: grid;
+  gap: 10px;
+}
+
+.dashboard-problem-solution strong {
+  line-height: 1.7;
+  font-size: 0.98rem;
+}
+
+.wallet-workspace {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+}
+
+.wallet-sidebar {
+  position: sticky;
+  top: 96px;
+}
+
+.wallet-sidebar nav {
+  display: grid;
+  gap: 10px;
+}
+
+.sidebar-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar-action-active {
+  border-color: rgba(102, 182, 255, 0.35);
+  background: linear-gradient(135deg, rgba(102, 182, 255, 0.16), rgba(142, 107, 255, 0.1));
+}
+
+.sidebar-action-muted {
+  color: var(--muted);
+  cursor: default;
+}
+
+.sidebar-action small {
+  color: #b7c5e4;
+}
+
+.wallet-main-panel {
+  min-width: 0;
+}
+
+.ai-fab {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 80;
+  width: 60px;
+  height: 60px;
+  border: 1px solid rgba(120, 170, 255, 0.35);
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+  color: #04101e;
+  font-weight: 900;
+  box-shadow: 0 18px 42px rgba(102, 182, 255, 0.28);
+  cursor: pointer;
+}
+
+.ai-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 81;
+  border: 0;
+  background: rgba(3, 6, 13, 0.52);
+  backdrop-filter: blur(8px);
+}
+
+.ai-drawer {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 82;
+  width: min(560px, calc(100vw - 32px));
+  overflow-y: auto;
+  padding-top: 52px;
+}
+
+.ai-drawer .card {
+  min-height: 100%;
+}
+
+.ai-close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1095,6 +1397,58 @@ button:disabled {
   }
 }
 
+@keyframes loginGradientShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes loginBlobLeft {
+  50% {
+    transform: translate3d(28px, -16px, 0) scale(1.08);
+  }
+}
+
+@keyframes loginBlobRight {
+  50% {
+    transform: translate3d(-22px, 18px, 0) scale(1.1);
+  }
+}
+
+@keyframes loginCardReveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes loginBorderFlow {
+  to {
+    background-position: 220% 0;
+  }
+}
+
+@keyframes welcomeFade {
+  0% {
+    opacity: 0;
+  }
+  18%,
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 @keyframes logoReveal {
   0% {
     opacity: 0;
@@ -1197,6 +1551,13 @@ button:disabled {
     opacity: 1;
     transform: none;
   }
+
+  .login-page-shell,
+  .login-card-premium::before,
+  .login-blob,
+  .welcome-overlay {
+    animation: none;
+  }
 }
 
 @media (max-width: 900px) {
@@ -1213,6 +1574,24 @@ button:disabled {
   .network-facts-grid,
   .activity-row {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-problem-solution,
+  .wallet-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .wallet-sidebar {
+    position: static;
+  }
+
+  .wallet-sidebar nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wallet-dashboard-hero {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .asset-row {
@@ -1306,5 +1685,10 @@ button:disabled {
 
   .receive-toast {
     position: static;
+  }
+
+  .ai-fab {
+    right: 16px;
+    bottom: 16px;
   }
 }
