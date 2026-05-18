@@ -7,7 +7,6 @@ A simple, working Arc wallet app built around Arc App Kit.
 - `Dashboard`
 - `Send` tab
 - `Bridge` tab
-- `Unified Balance` tab
 - `AI Assistant` tab
 - `Activity` tab
 
@@ -26,7 +25,8 @@ The app keeps the current Arc AI Wallet branding and dark premium UI, but remove
 ## Routes
 
 - `/` single-page dashboard for all wallet actions
-- `/send`, `/bridge`, `/unified-balance`, `/assistant`, `/activity` redirect back to the matching dashboard tab for backward compatibility
+- `/send`, `/bridge`, `/assistant`, `/activity` redirect back to the matching dashboard tab for backward compatibility
+- `/unified-balance` redirects home because Unified Balance has been removed from the product
 
 ## Environment variables
 
@@ -89,20 +89,7 @@ Open:
 9. Check the step feed and ArcScan/explorer links
 10. Confirm the bridge action appears in the `Activity` tab
 
-### 4. Unified Balance
-
-1. Open `/`
-2. Connect wallet
-3. Open the `Unified Balance` tab
-4. Click `Refresh Unified Balance`
-5. Deposit USDC from a supported source chain
-6. After confirmation, verify confirmed/pending balances update
-7. Enter an Arc recipient and spend amount
-8. Click `Spend on Arc`
-9. Confirm the spend in wallet
-10. Confirm both deposit and spend appear in the `Activity` tab
-
-### 5. AI Assistant
+### 4. AI Assistant
 
 1. Open `/`
 2. Open the `AI Assistant` tab
@@ -114,16 +101,16 @@ Open:
    - `Explain Arc USDC gas`
 5. If `OPENAI_API_KEY` is missing, the assistant falls back to local wallet guidance
 
-### 6. Activity
+### 5. Activity
 
 1. Open `/`
 2. Open the `Activity` tab
-3. Confirm local App Kit actions appear:
-   - `Send`
-   - `Bridge`
-   - `Unified Balance Deposit`
-   - `Unified Balance Spend`
-4. Confirm live Arc activity appears when recent onchain events are available
+3. Confirm real wallet events appear for:
+   - `Sent USDC`
+   - `Received USDC`
+   - `Bridge received`
+   - `Approval`
+4. Confirm in-app Send and Bridge actions are matched to live Arc activity when the tx hash is available
 
 ## Deployment
 

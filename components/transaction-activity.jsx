@@ -7,6 +7,21 @@ function shortenValue(value) {
 }
 
 function ActivityCard({ item }) {
+  const sourceCopy =
+    item.source === "merged"
+      ? "Matched to a confirmed onchain wallet transaction"
+      : item.source === "app"
+        ? "Saved from an in-app wallet action"
+        : "Tracked from live Arc onchain activity";
+  const counterpartyLabel =
+    item.kind === "sent"
+      ? "Recipient"
+      : item.kind === "received"
+        ? "From"
+        : item.kind === "bridge_received"
+          ? "Destination"
+          : "Counterparty";
+
   return (
     <article className="activity-card">
       <div className="activity-card-head">
@@ -27,10 +42,8 @@ function ActivityCard({ item }) {
       <div className="activity-card-footer">
         <span>
           {item.recipient
-            ? `Recipient: ${shortenValue(item.recipient)}`
-            : item.source === "app"
-              ? "Saved from in-app action history"
-              : "Tracked from Arc onchain activity"}
+            ? `${counterpartyLabel}: ${shortenValue(item.recipient)}`
+            : sourceCopy}
         </span>
         {item.explorerUrl ? (
           <a href={item.explorerUrl} target="_blank" rel="noreferrer">
@@ -83,8 +96,8 @@ export default function TransactionActivity({
         <div className="empty-state">
           <strong>No wallet actions yet.</strong>
           <p>
-            Send, bridge, or Unified Balance actions will appear here after you
-            confirm them in your wallet.
+            Real sent, received, and bridge events will appear here after your
+            wallet records them onchain.
           </p>
         </div>
       ) : (

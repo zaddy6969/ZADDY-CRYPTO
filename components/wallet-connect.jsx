@@ -216,9 +216,8 @@ export default function WalletConnect({ walletSnapshot, onReceiveClick }) {
 
                 {isSignedIn ? (
                   <p className="helper-copy">
-                    Signed in with wallet. You can now use Send, Bridge,
-                    Unified Balance, AI Assistant, and Activity sections with live
-                    wallet context.
+                    Signed in with wallet. You can now use Send, Bridge, Receive,
+                    AI Assistant, and Activity with live Arc wallet context.
                   </p>
                 ) : null}
               </>

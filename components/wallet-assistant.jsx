@@ -70,14 +70,13 @@ function ActionButton({ action, onPrompt }) {
 export default function WalletAssistant({
   walletSnapshot,
   activityItems,
-  activityStatus,
-  unifiedBalance
+  activityStatus
 }) {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
       content:
-        "I'm your Arc wallet copilot. Ask about balances, recent activity, Send, Bridge, Unified Balance, or what to do next."
+        "I'm your Arc wallet copilot. Ask about balances, recent activity, Send, Bridge, Receive, or what to do next."
     }
   ]);
   const [question, setQuestion] = useState("");
@@ -99,10 +98,9 @@ export default function WalletAssistant({
       activity: {
         status: activityStatus,
         items: Array.isArray(activityItems) ? activityItems.slice(0, 12) : []
-      },
-      unifiedBalance: unifiedBalance || null
+      }
     }),
-    [activityItems, activityStatus, unifiedBalance, walletSnapshot]
+    [activityItems, activityStatus, walletSnapshot]
   );
 
   const insights = useMemo(() => buildWalletInsights(context), [context]);
@@ -205,9 +203,9 @@ export default function WalletAssistant({
           <small>Live from your connected Arc wallet snapshot</small>
         </div>
         <div className="summary-card">
-          <span className="field-label">Unified Balance</span>
-          <strong>{unifiedBalance?.totalConfirmedBalance || "0.00"} USDC</strong>
-          <small>Confirmed across your supported testnet chains</small>
+          <span className="field-label">Recent activity</span>
+          <strong>{Array.isArray(activityItems) ? activityItems.length : 0} events</strong>
+          <small>Live send, receive, and bridge events for this wallet</small>
         </div>
       </div>
 
@@ -260,7 +258,7 @@ export default function WalletAssistant({
           className="assistant-input"
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
-          placeholder="Ask about Send, Bridge, Unified Balance, or your wallet activity..."
+          placeholder="Ask about Send, Bridge, Receive, or your wallet activity..."
           rows={4}
         />
         <div className="assistant-form-row">

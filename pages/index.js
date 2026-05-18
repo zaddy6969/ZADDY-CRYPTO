@@ -4,12 +4,10 @@ import AppShell from "../components/app-shell";
 import BridgeToArcPanel from "../components/bridge-to-arc-panel";
 import SendUsdcPanel from "../components/send-usdc-panel";
 import TransactionActivity from "../components/transaction-activity";
-import UnifiedBalancePanel from "../components/unified-balance-panel";
 import ReceiveModal from "../components/wallet/ReceiveModal";
 import WalletAssistant from "../components/wallet-assistant";
 import WalletConnect, { WalletConnectCta } from "../components/wallet-connect";
 import { arcTestnet } from "../lib/arc-chain";
-import { useUnifiedBalanceSummary } from "../lib/use-unified-balance-summary";
 import { useWalletAppState } from "../lib/use-wallet-app-state";
 
 const SITE_URL =
@@ -29,12 +27,6 @@ const DASHBOARD_TABS = [
     body: "Move supported testnet USDC into Arc Testnet."
   },
   {
-    id: "unified-balance",
-    label: "Unified Balance",
-    kicker: "Crosschain USDC",
-    body: "Deposit from supported chains and spend instantly on Arc."
-  },
-  {
     id: "assistant",
     label: "AI Assistant",
     kicker: "Wallet Copilot",
@@ -44,7 +36,7 @@ const DASHBOARD_TABS = [
     id: "activity",
     label: "Activity",
     kicker: "Wallet History",
-    body: "Track Send, Bridge, Deposit, and Spend actions with explorer links."
+    body: "Track real send, receive, and bridge events with explorer links."
   }
 ];
 
@@ -65,10 +57,6 @@ export default function Home() {
     liveActivityError,
     saveLocalActivity
   } = useWalletAppState();
-  const {
-    summary: unifiedBalance,
-    status: unifiedBalanceStatus
-  } = useUnifiedBalanceSummary(walletSnapshot.isSignedIn);
   const [activeTab, setActiveTab] = useState("send");
   const [receiveOpen, setReceiveOpen] = useState(false);
 
@@ -110,22 +98,12 @@ export default function Home() {
       );
     }
 
-    if (activeTab === "unified-balance") {
-      return (
-        <UnifiedBalancePanel
-          walletSnapshot={walletSnapshot}
-          onActivitySaved={saveLocalActivity}
-        />
-      );
-    }
-
     if (activeTab === "assistant") {
       return (
         <WalletAssistant
           walletSnapshot={walletSnapshot}
           activityItems={mergedActivity}
           activityStatus={liveActivityStatus}
-          unifiedBalance={unifiedBalance}
         />
       );
     }
@@ -205,14 +183,14 @@ export default function Home() {
               <strong>{walletSnapshot.usdcBalance || "Syncing..."}</strong>
             </div>
             <div className="wallet-summary-item">
-              <span className="field-label">Unified Balance</span>
+              <span className="field-label">Recent activity</span>
               <strong>
-                {unifiedBalance?.totalConfirmedBalance || "0.00"} USDC
+                {walletSnapshot.isSignedIn ? `${mergedActivity.length} events` : "Wallet required"}
               </strong>
               <small>
-                {unifiedBalanceStatus === "loading"
-                  ? "Loading your combined crosschain USDC"
-                  : "Confirmed spendable USDC tracked by App Kit"}
+                {liveActivityStatus === "loading" || liveActivityStatus === "refreshing"
+                  ? "Syncing sent, received, and bridge activity from Arc"
+                  : "Real send, receive, and bridge events from your wallet feed"}
               </small>
             </div>
           </div>
