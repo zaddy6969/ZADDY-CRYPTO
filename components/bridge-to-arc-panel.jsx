@@ -13,6 +13,7 @@ import {
 import {
   createArcBridgeClient,
   formatBridgeError,
+  getBridgeErrorDetail,
   normalizeBridgeSteps,
   summarizeBridgeFees
 } from "../lib/arc-bridge";
@@ -73,6 +74,7 @@ export default function BridgeToArcPanel({
   const [recipientAddress, setRecipientAddress] = useState(connectedAddress);
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
+  const [errorDetail, setErrorDetail] = useState("");
   const [estimate, setEstimate] = useState(null);
   const [bridgeResult, setBridgeResult] = useState(null);
 
@@ -114,6 +116,7 @@ export default function BridgeToArcPanel({
 
     setStatus("estimating");
     setError("");
+    setErrorDetail("");
     setBridgeResult(null);
 
     try {
@@ -142,6 +145,7 @@ export default function BridgeToArcPanel({
       setEstimate(null);
       setStatus("error");
       setError(formatBridgeError(nextError));
+      setErrorDetail(getBridgeErrorDetail(nextError));
     }
   };
 
@@ -152,6 +156,7 @@ export default function BridgeToArcPanel({
 
     setStatus("bridging");
     setError("");
+    setErrorDetail("");
 
     try {
       if (needsSourceSwitch && switchChainAsync) {
@@ -198,6 +203,7 @@ export default function BridgeToArcPanel({
     } catch (nextError) {
       setStatus("error");
       setError(formatBridgeError(nextError));
+      setErrorDetail(getBridgeErrorDetail(nextError));
     }
   };
 
@@ -206,6 +212,7 @@ export default function BridgeToArcPanel({
       await switchChainAsync({ chainId: sourceChain.id });
     } catch (nextError) {
       setError(formatBridgeError(nextError));
+      setErrorDetail(getBridgeErrorDetail(nextError));
     }
   };
 
@@ -425,9 +432,15 @@ export default function BridgeToArcPanel({
             </Badge>
           </div>
           {error ? (
-            <p className="mt-4 rounded-2xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
-              {error}
-            </p>
+            <div className="mt-4 rounded-2xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
+              <p>{error}</p>
+              {errorDetail && errorDetail !== error ? (
+                <details className="mt-3 text-xs text-rose-100/80">
+                  <summary className="cursor-pointer">Technical details</summary>
+                  <p className="mt-2 break-words font-mono">{errorDetail}</p>
+                </details>
+              ) : null}
+            </div>
           ) : null}
         </div>
 
