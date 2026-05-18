@@ -4,11 +4,12 @@ A simple, working Arc wallet app built around Arc App Kit.
 
 ## What it includes
 
-- `Dashboard`
-- `Send` tab
-- `Bridge` tab
-- `AI Assistant` tab
-- `Activity` tab
+- single-page `Dashboard`
+- real `Send USDC`
+- real `Receive`
+- real `Bridge USDC to Arc`
+- floating `AI Assistant`
+- live `Activity`
 
 The app keeps the current Arc AI Wallet branding and dark premium UI, but removes the old demo-heavy portfolio flow and focuses on real App Kit actions.
 
@@ -25,7 +26,7 @@ The app keeps the current Arc AI Wallet branding and dark premium UI, but remove
 ## Routes
 
 - `/` single-page dashboard for all wallet actions
-- `/send`, `/bridge`, `/assistant`, `/activity` redirect back to the matching dashboard tab for backward compatibility
+- `/send`, `/bridge`, `/assistant`, `/activity` redirect back to the matching dashboard view for backward compatibility
 - `/unified-balance` redirects home because Unified Balance has been removed from the product
 
 ## Environment variables
@@ -36,6 +37,7 @@ Copy `.env.example` to `.env.local` and set:
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
 NEXT_PUBLIC_SITE_URL=https://arc-ai-wallet.vercel.app
 NEXT_PUBLIC_ARC_RPC_URL=https://rpc.testnet.arc.network
+NEXT_PUBLIC_ARC_TESTNET_USDC_ADDRESS=0x3600000000000000000000000000000000000000
 OPENAI_API_KEY=your_openai_api_key
 OPENAI_MODEL=gpt-5.4-mini
 ```
@@ -44,6 +46,8 @@ Notes:
 
 - `OPENAI_API_KEY` is only used server-side through `/api/ai`
 - do not put private keys or seed phrases in frontend env vars
+- `KIT_KEY` is intentionally not used by the public dashboard today because a secure
+  browser-wallet Swap flow needs a larger architecture change before launch
 
 ## Local development
 
@@ -92,7 +96,7 @@ Open:
 ### 4. AI Assistant
 
 1. Open `/`
-2. Open the `AI Assistant` tab
+2. Open the floating AI Assistant panel
 3. Connect wallet for live context, or ask general Arc/App Kit questions without connecting
 4. Ask:
    - `Analyze my wallet`
