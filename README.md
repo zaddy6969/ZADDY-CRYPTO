@@ -5,11 +5,11 @@ A simple, working Arc wallet app built around Arc App Kit.
 ## What it includes
 
 - `Dashboard`
-- `Send USDC`
-- `Bridge USDC`
-- `Unified Balance`
-- `AI Assistant`
-- `Activity`
+- `Send` tab
+- `Bridge` tab
+- `Unified Balance` tab
+- `AI Assistant` tab
+- `Activity` tab
 
 The app keeps the current Arc AI Wallet branding and dark premium UI, but removes the old demo-heavy portfolio flow and focuses on real App Kit actions.
 
@@ -25,12 +25,8 @@ The app keeps the current Arc AI Wallet branding and dark premium UI, but remove
 
 ## Routes
 
-- `/` dashboard
-- `/send` send USDC on Arc Testnet with App Kit `send()`
-- `/bridge` bridge USDC into Arc with App Kit `bridge()`
-- `/unified-balance` deposit, inspect, and spend with App Kit Unified Balance
-- `/assistant` wallet copilot
-- `/activity` local App Kit history + live Arc activity
+- `/` single-page dashboard for all wallet actions
+- `/send`, `/bridge`, `/unified-balance`, `/assistant`, `/activity` redirect back to the matching dashboard tab for backward compatibility
 
 ## Environment variables
 
@@ -46,7 +42,7 @@ OPENAI_MODEL=gpt-5.4-mini
 
 Notes:
 
-- `OPENAI_API_KEY` is only used server-side through `/api/ai-assistant`
+- `OPENAI_API_KEY` is only used server-side through `/api/ai`
 - do not put private keys or seed phrases in frontend env vars
 
 ## Local development
@@ -71,58 +67,63 @@ Open:
 
 ### 2. Send USDC
 
-1. Open `/send`
+1. Open `/`
 2. Connect wallet and switch to Arc Testnet
-3. Enter a recipient and USDC amount
-4. Click `Estimate Fee`
-5. Click `Send USDC`
-6. Confirm in wallet
-7. Check the ArcScan transaction link and then confirm the action appears on `/activity`
+3. Open the `Send` tab
+4. Enter a recipient and USDC amount
+5. Click `Estimate Fee`
+6. Click `Send USDC`
+7. Confirm in wallet
+8. Check the ArcScan transaction link and then confirm the action appears in the `Activity` tab
 
 ### 3. Bridge USDC
 
-1. Open `/bridge`
+1. Open `/`
 2. Connect wallet
-3. Choose `Ethereum Sepolia` or `Base Sepolia`
-4. Enter amount and recipient
-5. Click `Estimate Bridge`
-6. Click `Bridge USDC to Arc`
-7. Confirm in wallet
-8. Check the step feed and ArcScan/explorer links
-9. Confirm the bridge action appears on `/activity`
+3. Open the `Bridge` tab
+4. Choose `Ethereum Sepolia` or `Base Sepolia`
+5. Enter amount and recipient
+6. Click `Estimate Bridge`
+7. Click `Bridge USDC to Arc`
+8. Confirm in wallet
+9. Check the step feed and ArcScan/explorer links
+10. Confirm the bridge action appears in the `Activity` tab
 
 ### 4. Unified Balance
 
-1. Open `/unified-balance`
+1. Open `/`
 2. Connect wallet
-3. Click `Refresh Unified Balance`
-4. Deposit USDC from a supported source chain
-5. After confirmation, verify confirmed/pending balances update
-6. Enter an Arc recipient and spend amount
-7. Click `Spend on Arc`
-8. Confirm the spend in wallet
-9. Confirm both deposit and spend appear on `/activity`
+3. Open the `Unified Balance` tab
+4. Click `Refresh Unified Balance`
+5. Deposit USDC from a supported source chain
+6. After confirmation, verify confirmed/pending balances update
+7. Enter an Arc recipient and spend amount
+8. Click `Spend on Arc`
+9. Confirm the spend in wallet
+10. Confirm both deposit and spend appear in the `Activity` tab
 
 ### 5. AI Assistant
 
-1. Open `/assistant`
-2. Connect wallet for live context, or use preview mode
-3. Ask:
+1. Open `/`
+2. Open the `AI Assistant` tab
+3. Connect wallet for live context, or ask general Arc/App Kit questions without connecting
+4. Ask:
    - `Analyze my wallet`
    - `How much USDC do I have?`
    - `Show recent activity`
    - `Explain Arc USDC gas`
-4. If `OPENAI_API_KEY` is missing, the assistant falls back to local wallet guidance
+5. If `OPENAI_API_KEY` is missing, the assistant falls back to local wallet guidance
 
 ### 6. Activity
 
-1. Open `/activity`
-2. Confirm local App Kit actions appear:
+1. Open `/`
+2. Open the `Activity` tab
+3. Confirm local App Kit actions appear:
    - `Send`
    - `Bridge`
    - `Unified Balance Deposit`
    - `Unified Balance Spend`
-3. Confirm live Arc activity appears when recent onchain events are available
+4. Confirm live Arc activity appears when recent onchain events are available
 
 ## Deployment
 

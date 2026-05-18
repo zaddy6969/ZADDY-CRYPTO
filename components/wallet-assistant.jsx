@@ -77,7 +77,7 @@ export default function WalletAssistant({
     {
       role: "assistant",
       content:
-        "I’m your Arc wallet copilot. Ask about balances, recent activity, Send, Bridge, Unified Balance, or what to do next."
+        "I'm your Arc wallet copilot. Ask about balances, recent activity, Send, Bridge, Unified Balance, or what to do next."
     }
   ]);
   const [question, setQuestion] = useState("");
@@ -121,7 +121,7 @@ export default function WalletAssistant({
     setError("");
 
     try {
-      const response = await fetch("/api/ai-assistant", {
+      const response = await fetch("/api/ai", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -181,7 +181,11 @@ export default function WalletAssistant({
           <h2>Simple wallet guidance built around Arc App Kit</h2>
         </div>
         <span className="status-badge">
-          {loading ? "Thinking" : walletSnapshot?.isSignedIn ? "Live wallet mode" : "Preview mode"}
+          {loading
+            ? "Thinking"
+            : walletSnapshot?.isSignedIn
+              ? "Live wallet mode"
+              : "AI ready"}
         </span>
       </div>
 
@@ -202,9 +206,7 @@ export default function WalletAssistant({
         </div>
         <div className="summary-card">
           <span className="field-label">Unified Balance</span>
-          <strong>
-            {unifiedBalance?.totalConfirmedBalance || "0.00"} USDC
-          </strong>
+          <strong>{unifiedBalance?.totalConfirmedBalance || "0.00"} USDC</strong>
           <small>Confirmed across your supported testnet chains</small>
         </div>
       </div>
@@ -263,7 +265,7 @@ export default function WalletAssistant({
         />
         <div className="assistant-form-row">
           <span className="helper-copy">
-            Ask things like “Analyze my wallet” or “Explain Arc USDC gas.”
+            Ask things like "Analyze my wallet" or "Explain Arc USDC gas."
           </span>
           <button type="submit" className="button button-primary" disabled={loading}>
             {loading ? "Thinking..." : "Ask Copilot"}

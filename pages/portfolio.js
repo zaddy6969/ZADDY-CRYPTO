@@ -1,12 +1,12 @@
 export async function getServerSideProps() {
   return {
     redirect: {
-      destination: "/#send",
+      destination: "/",
       permanent: false
     }
   };
 }
 
-export default function SendRedirect() {
+export default function PortfolioRedirect() {
   return null;
 }

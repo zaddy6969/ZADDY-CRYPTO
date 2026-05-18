@@ -1,33 +1,153 @@
 import Head from "next/head";
-import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import AppShell from "../components/app-shell";
-import WalletConnect from "../components/wallet-connect";
-import { ARC_TESTNET_INFO_ITEMS, arcTestnet } from "../lib/arc-chain";
+import BridgeToArcPanel from "../components/bridge-to-arc-panel";
+import SendUsdcPanel from "../components/send-usdc-panel";
+import TransactionActivity from "../components/transaction-activity";
+import UnifiedBalancePanel from "../components/unified-balance-panel";
+import ReceiveModal from "../components/wallet/ReceiveModal";
+import WalletAssistant from "../components/wallet-assistant";
+import WalletConnect, { WalletConnectCta } from "../components/wallet-connect";
+import { arcTestnet } from "../lib/arc-chain";
 import { useUnifiedBalanceSummary } from "../lib/use-unified-balance-summary";
 import { useWalletAppState } from "../lib/use-wallet-app-state";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://arc-ai-wallet.vercel.app";
 
-function QuickActionCard({ href, kicker, title, body }) {
-  return (
-    <Link href={href} className="demo-preview-card">
-      <p className="section-kicker">{kicker}</p>
-      <strong>{title}</strong>
-      <p>{body}</p>
-    </Link>
-  );
+const DASHBOARD_TABS = [
+  {
+    id: "send",
+    label: "Send",
+    kicker: "App Kit Send",
+    body: "Transfer USDC on Arc Testnet with your connected wallet."
+  },
+  {
+    id: "bridge",
+    label: "Bridge",
+    kicker: "App Kit Bridge",
+    body: "Move supported testnet USDC into Arc Testnet."
+  },
+  {
+    id: "unified-balance",
+    label: "Unified Balance",
+    kicker: "Crosschain USDC",
+    body: "Deposit from supported chains and spend instantly on Arc."
+  },
+  {
+    id: "assistant",
+    label: "AI Assistant",
+    kicker: "Wallet Copilot",
+    body: "Ask real questions about Arc, USDC gas, activity, and next steps."
+  },
+  {
+    id: "activity",
+    label: "Activity",
+    kicker: "Wallet History",
+    body: "Track Send, Bridge, Deposit, and Spend actions with explorer links."
+  }
+];
+
+function getTabFromHash() {
+  if (typeof window === "undefined") {
+    return "send";
+  }
+
+  const hash = String(window.location.hash || "").replace(/^#/, "");
+  return DASHBOARD_TABS.some((tab) => tab.id === hash) ? hash : "send";
 }
 
 export default function Home() {
   const {
     walletSnapshot,
-    mergedActivity
+    mergedActivity,
+    liveActivityStatus,
+    liveActivityError,
+    saveLocalActivity
   } = useWalletAppState();
-  const { summary: unifiedBalance } = useUnifiedBalanceSummary(
-    walletSnapshot.isSignedIn
+  const {
+    summary: unifiedBalance,
+    status: unifiedBalanceStatus
+  } = useUnifiedBalanceSummary(walletSnapshot.isSignedIn);
+  const [activeTab, setActiveTab] = useState("send");
+  const [receiveOpen, setReceiveOpen] = useState(false);
+
+  useEffect(() => {
+    const syncFromHash = () => {
+      setActiveTab(getTabFromHash());
+    };
+
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+
+    return () => {
+      window.removeEventListener("hashchange", syncFromHash);
+    };
+  }, []);
+
+  const activeTabMeta = useMemo(
+    () => DASHBOARD_TABS.find((tab) => tab.id === activeTab) || DASHBOARD_TABS[0],
+    [activeTab]
   );
-  const recentItems = mergedActivity.slice(0, 3);
+
+  const setDashboardTab = (tabId) => {
+    setActiveTab(tabId);
+
+    if (typeof window !== "undefined") {
+      const nextUrl = `${window.location.pathname}#${tabId}`;
+      window.history.replaceState(null, "", nextUrl);
+    }
+  };
+
+  const renderActivePanel = () => {
+    if (activeTab === "bridge") {
+      return (
+        <BridgeToArcPanel
+          sectionId="dashboard-bridge"
+          walletSnapshot={walletSnapshot}
+          onActivitySaved={saveLocalActivity}
+        />
+      );
+    }
+
+    if (activeTab === "unified-balance") {
+      return (
+        <UnifiedBalancePanel
+          walletSnapshot={walletSnapshot}
+          onActivitySaved={saveLocalActivity}
+        />
+      );
+    }
+
+    if (activeTab === "assistant") {
+      return (
+        <WalletAssistant
+          walletSnapshot={walletSnapshot}
+          activityItems={mergedActivity}
+          activityStatus={liveActivityStatus}
+          unifiedBalance={unifiedBalance}
+        />
+      );
+    }
+
+    if (activeTab === "activity") {
+      return (
+        <TransactionActivity
+          walletSnapshot={walletSnapshot}
+          items={mergedActivity}
+          liveStatus={liveActivityStatus}
+          liveError={liveActivityError}
+        />
+      );
+    }
+
+    return (
+      <SendUsdcPanel
+        walletSnapshot={walletSnapshot}
+        onActivitySaved={saveLocalActivity}
+      />
+    );
+  };
 
   return (
     <>
@@ -53,6 +173,18 @@ export default function Home() {
             <span>Chain ID {arcTestnet.id}</span>
             <span>USDC gas</span>
           </div>
+          <div className="hero-actions">
+            <WalletConnectCta className="hero-actions-inline" />
+            {walletSnapshot.isSignedIn ? (
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => setReceiveOpen(true)}
+              >
+                Receive
+              </button>
+            ) : null}
+          </div>
           <div className="wallet-summary-grid">
             <div className="wallet-summary-item">
               <span className="field-label">Connected wallet</span>
@@ -77,135 +209,69 @@ export default function Home() {
               <strong>
                 {unifiedBalance?.totalConfirmedBalance || "0.00"} USDC
               </strong>
+              <small>
+                {unifiedBalanceStatus === "loading"
+                  ? "Loading your combined crosschain USDC"
+                  : "Confirmed spendable USDC tracked by App Kit"}
+              </small>
             </div>
-          </div>
-          <div className="hero-actions">
-            <Link href="/send" className="button button-primary">
-              Send USDC
-            </Link>
-            <Link href="/bridge" className="button button-secondary">
-              Bridge USDC
-            </Link>
-            <Link href="/unified-balance" className="button button-secondary">
-              Unified Balance
-            </Link>
-            <Link href="/assistant" className="button button-secondary">
-              AI Assistant
-            </Link>
           </div>
         </section>
 
-        <WalletConnect walletSnapshot={walletSnapshot} />
+        <WalletConnect
+          walletSnapshot={walletSnapshot}
+          onReceiveClick={() => setReceiveOpen(true)}
+        />
 
-        <section className="card">
+        <section className="card" id="dashboard-actions">
           <div className="section-heading">
             <div>
-              <p className="section-kicker">Quick Actions</p>
-              <h2>Core Arc wallet flows</h2>
+              <p className="section-kicker">Wallet Actions</p>
+              <h2>Everything in one dashboard</h2>
             </div>
+            <span className="status-badge">{activeTabMeta.kicker}</span>
           </div>
-          <div className="demo-preview-grid">
-            <QuickActionCard
-              href="/send"
-              kicker="Send"
-              title="Send USDC on Arc"
-              body="Use App Kit Send to transfer USDC to another wallet on Arc Testnet."
-            />
-            <QuickActionCard
-              href="/bridge"
-              kicker="Bridge"
-              title="Bridge USDC to Arc"
-              body="Move testnet USDC from Ethereum Sepolia or Base Sepolia into Arc Testnet."
-            />
-            <QuickActionCard
-              href="/unified-balance"
-              kicker="Unified Balance"
-              title="Combine balances"
-              body="Deposit USDC from supported chains and spend the combined balance on Arc."
-            />
-            <QuickActionCard
-              href="/assistant"
-              kicker="AI Assistant"
-              title="Ask Wallet Copilot"
-              body="Get clear help with Arc, USDC gas, activity, Send, Bridge, and Unified Balance."
-            />
+
+          <div className="dashboard-tab-row" role="tablist" aria-label="Dashboard actions">
+            {DASHBOARD_TABS.map((tab) => {
+              const isActive = tab.id === activeTab;
+
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-controls={`panel-${tab.id}`}
+                  className={`dashboard-tab ${isActive ? "dashboard-tab-active" : ""}`}
+                  onClick={() => setDashboardTab(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="empty-state empty-state-compact">
+            <strong>{activeTabMeta.label}</strong>
+            <p>{activeTabMeta.body}</p>
+          </div>
+
+          <div
+            id={`panel-${activeTabMeta.id}`}
+            role="tabpanel"
+            className="dashboard-tab-panel"
+          >
+            {renderActivePanel()}
           </div>
         </section>
 
-        <section className="card">
-          <div className="section-heading">
-            <div>
-              <p className="section-kicker">Arc Testnet</p>
-              <h2>Network details</h2>
-            </div>
-          </div>
-          <div className="network-facts-grid">
-            {ARC_TESTNET_INFO_ITEMS.map((item) => (
-              <div key={item.label} className="network-fact">
-                <span className="field-label">{item.label}</span>
-                {item.href ? (
-                  <a href={item.href} target="_blank" rel="noreferrer">
-                    {item.value}
-                  </a>
-                ) : (
-                  <strong>{item.value}</strong>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="card">
-          <div className="section-heading">
-            <div>
-              <p className="section-kicker">Activity Preview</p>
-              <h2>Latest wallet actions</h2>
-            </div>
-            <Link href="/activity" className="button button-secondary">
-              Open Activity
-            </Link>
-          </div>
-
-          {!walletSnapshot.isSignedIn ? (
-            <div className="empty-state">
-              <strong>Connect wallet to load real activity.</strong>
-              <p>
-                Your Send, Bridge, and Unified Balance actions will appear here
-                together with recent Arc onchain activity.
-              </p>
-            </div>
-          ) : recentItems.length === 0 ? (
-            <div className="empty-state">
-              <strong>No wallet actions yet.</strong>
-              <p>
-                Start with Send USDC, Bridge USDC, or Unified Balance to build
-                a real activity history for this wallet.
-              </p>
-            </div>
-          ) : (
-            <div className="activity-feed">
-              {recentItems.map((item) => (
-                <article key={item.id} className="activity-card">
-                  <div className="activity-card-head">
-                    <div className="activity-card-copy">
-                      <strong>{item.type}</strong>
-                      <span>{item.summary}</span>
-                    </div>
-                    <div className="activity-card-amount">
-                      <strong>{item.amount || "Tracked event"}</strong>
-                      <span>{item.chain || arcTestnet.name}</span>
-                    </div>
-                  </div>
-                  <div className="activity-card-meta">
-                    <span>{item.timeLabel || "Recently"}</span>
-                    <span>{item.status || "Confirmed"}</span>
-                    {item.txHashShort ? <span>{item.txHashShort}</span> : null}
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
+        <ReceiveModal
+          open={receiveOpen}
+          onClose={() => setReceiveOpen(false)}
+          address={walletSnapshot.address}
+          networkLabel={arcTestnet.name}
+        />
       </AppShell>
     </>
   );

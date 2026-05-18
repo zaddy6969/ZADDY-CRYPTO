@@ -66,7 +66,7 @@ export function WalletConnectCta({ className = "hero-actions" }) {
   );
 }
 
-export default function WalletConnect({ walletSnapshot }) {
+export default function WalletConnect({ walletSnapshot, onReceiveClick }) {
   const [copied, setCopied] = useState(false);
   const {
     address,
@@ -180,6 +180,15 @@ export default function WalletConnect({ walletSnapshot }) {
                 </div>
 
                 <div className="wallet-actions">
+                  {isSignedIn && onReceiveClick ? (
+                    <button
+                      type="button"
+                      className="button button-secondary"
+                      onClick={onReceiveClick}
+                    >
+                      Receive
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     className="button button-secondary"
@@ -208,7 +217,7 @@ export default function WalletConnect({ walletSnapshot }) {
                 {isSignedIn ? (
                   <p className="helper-copy">
                     Signed in with wallet. You can now use Send, Bridge,
-                    Unified Balance, AI Assistant, and Activity routes with live
+                    Unified Balance, AI Assistant, and Activity sections with live
                     wallet context.
                   </p>
                 ) : null}

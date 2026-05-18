@@ -89,6 +89,14 @@ export default function BridgeToArcPanel({
 
   const feeRows = useMemo(() => summarizeBridgeFees(estimate), [estimate]);
   const stepRows = useMemo(() => normalizeBridgeSteps(bridgeResult), [bridgeResult]);
+  const bridgeTxHash = useMemo(
+    () => getPrimaryTxHash(bridgeResult),
+    [bridgeResult]
+  );
+  const bridgeExplorerUrl = useMemo(
+    () => getPrimaryExplorerUrl(bridgeResult),
+    [bridgeResult]
+  );
   const helperCopy = getBridgeStatusCopy(status);
 
   useEffect(() => {
@@ -434,6 +442,27 @@ export default function BridgeToArcPanel({
                 <strong className="mt-3 block text-lg text-white">{fee.value}</strong>
               </div>
             ))}
+          </div>
+        ) : null}
+
+        {bridgeTxHash ? (
+          <div className="rounded-[22px] border border-emerald-400/20 bg-emerald-400/10 p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-200/80">
+              Bridge transaction
+            </p>
+            <p className="mt-2 break-all font-mono text-sm text-white">
+              {bridgeTxHash}
+            </p>
+            {bridgeExplorerUrl ? (
+              <a
+                href={bridgeExplorerUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 inline-flex text-sm font-medium text-emerald-100 underline decoration-emerald-200/30 underline-offset-4"
+              >
+                View on explorer
+              </a>
+            ) : null}
           </div>
         ) : null}
 

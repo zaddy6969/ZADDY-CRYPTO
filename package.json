@@ -21,6 +21,7 @@
     "framer-motion": "12.23.24",
     "next": "15.5.9",
     "postcss": "8.4.49",
+    "qrcode.react": "4.2.0",
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "recharts": "2.15.4",
@@ -31,7 +32,11 @@
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.9",
+    "@types/node": "^25.8.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "dotenv": "^17.2.3",
-    "hardhat": "^2.26.3"
+    "hardhat": "^2.26.3",
+    "typescript": "5.9.3"
   }
 }
