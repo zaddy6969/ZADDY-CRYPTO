@@ -31,7 +31,8 @@ export default function Home() {
     liveActivityStatus,
     liveActivityError,
     saveLocalActivity,
-    refreshActivity
+    refreshActivity,
+    updateLocalActivityByHash
   } = useWalletAppState();
   const [activeView, setActiveView] = useState("send");
   const [receiveOpen, setReceiveOpen] = useState(false);
@@ -155,6 +156,7 @@ export default function Home() {
               <SendUsdcPanel
                 walletSnapshot={walletSnapshot}
                 onActivitySaved={saveLocalActivity}
+                onActivityUpdated={updateLocalActivityByHash}
               />
             )}
           </div>
