@@ -2,7 +2,7 @@ const ACTIONS = [
   { id: "send", label: "Send" },
   { id: "receive", label: "Receive" },
   { id: "swap", label: "Swap", comingSoon: true },
-  { id: "bridge", label: "Bridge", comingSoon: true },
+  { id: "bridge", label: "Bridge" },
   { id: "activity", label: "Activity" }
 ];
 

@@ -1,6 +1,7 @@
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import AppShell from "../components/app-shell";
+import BridgeToArcPanel from "../components/bridge-to-arc-panel";
 import SendUsdcPanel from "../components/send-usdc-panel";
 import TransactionActivity from "../components/transaction-activity";
 import WalletAiDrawer from "../components/wallet-ai-drawer";
@@ -13,7 +14,7 @@ import { useWalletAppState } from "../lib/use-wallet-app-state";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://arc-ai-wallet.vercel.app";
-const SUPPORTED_VIEWS = new Set(["send", "activity"]);
+const SUPPORTED_VIEWS = new Set(["send", "bridge", "activity"]);
 
 function WelcomeOverlay() {
   return (
@@ -151,6 +152,12 @@ export default function Home() {
                 liveStatus={liveActivityStatus}
                 liveError={liveActivityError}
                 onRefresh={refreshActivity}
+              />
+            ) : activeView === "bridge" ? (
+              <BridgeToArcPanel
+                walletSnapshot={walletSnapshot}
+                onActivitySaved={saveLocalActivity}
+                compact
               />
             ) : (
               <SendUsdcPanel
