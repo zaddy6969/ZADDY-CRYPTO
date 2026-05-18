@@ -30,7 +30,8 @@ export default function Home() {
     mergedActivity,
     liveActivityStatus,
     liveActivityError,
-    saveLocalActivity
+    saveLocalActivity,
+    refreshActivity
   } = useWalletAppState();
   const [activeView, setActiveView] = useState("send");
   const [receiveOpen, setReceiveOpen] = useState(false);
@@ -161,6 +162,7 @@ export default function Home() {
                 items={mergedActivity}
                 liveStatus={liveActivityStatus}
                 liveError={liveActivityError}
+                onRefresh={refreshActivity}
               />
             ) : (
               <SendUsdcPanel

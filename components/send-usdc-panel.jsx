@@ -154,11 +154,12 @@ export default function SendUsdcPanel({ walletSnapshot, onActivitySaved }) {
       onActivitySaved?.(
         createWalletActionRecord({
           walletAddress: walletSnapshot.address,
-          type: "Send",
+          type: "Sent USDC",
+          kind: "sent",
           amount: `${amount} USDC`,
           chain: arcTestnet.name,
           recipient,
-          status: "Confirmed",
+          status: "Pending",
           txHash: getPrimaryTxHash(nextResult),
           explorerUrl: getPrimaryExplorerUrl(nextResult),
           summary: `Sent ${amount} USDC to ${shortAddress(recipient)} on Arc Testnet.`,

@@ -6,6 +6,19 @@ function shortenValue(value) {
   return `${value.slice(0, 8)}...${value.slice(-6)}`;
 }
 
+function formatActivityDate(value, fallback) {
+  const date = new Date(value || "");
+
+  if (Number.isNaN(date.getTime())) {
+    return fallback || "Recently";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(date);
+}
+
 function ActivityCard({ item }) {
   const sourceCopy =
     item.source === "merged"
@@ -35,7 +48,7 @@ function ActivityCard({ item }) {
         </div>
       </div>
       <div className="activity-card-meta">
-        <span>{item.timeLabel || "Recently"}</span>
+        <span>{formatActivityDate(item.createdAt, item.timeLabel)}</span>
         <span>{item.status || "Confirmed"}</span>
         {item.txHashShort ? <span>{item.txHashShort}</span> : null}
       </div>
@@ -59,7 +72,8 @@ export default function TransactionActivity({
   walletSnapshot,
   items,
   liveStatus,
-  liveError
+  liveError,
+  onRefresh
 }) {
   const isSignedIn = walletSnapshot?.isSignedIn;
 
@@ -70,31 +84,44 @@ export default function TransactionActivity({
           <p className="section-kicker">Activity</p>
           <h2>Wallet actions and Arc activity</h2>
         </div>
-        <span className="status-badge">
-          {!isSignedIn
-            ? "Wallet required"
-            : liveStatus === "loading" || liveStatus === "refreshing"
-              ? "Syncing"
-              : `${items.length} items`}
-        </span>
+        <div className="activity-heading-actions">
+          <span className="status-badge">
+            {!isSignedIn
+              ? "Wallet required"
+              : liveStatus === "loading" || liveStatus === "refreshing"
+                ? "Syncing"
+                : `${items.length} items`}
+          </span>
+          {isSignedIn ? (
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={onRefresh}
+              disabled={liveStatus === "loading" || liveStatus === "refreshing"}
+            >
+              {liveStatus === "loading" || liveStatus === "refreshing"
+                ? "Refreshing..."
+                : "Refresh Activity"}
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {!isSignedIn ? (
         <div className="empty-state">
           <strong>Connect wallet to view activity.</strong>
           <p>
-            This page combines local App Kit action history with recent Arc
-            onchain activity for the connected wallet.
+            Connect your wallet to load real Arc Testnet USDC transfers.
           </p>
         </div>
       ) : liveStatus === "loading" && items.length === 0 ? (
         <div className="empty-state">
-          <strong>Loading activity...</strong>
-          <p>Fetching recent Arc activity and local wallet actions.</p>
+          <strong>Loading transactions...</strong>
+          <p>Fetching recent Arc Testnet USDC activity for this wallet.</p>
         </div>
       ) : items.length === 0 ? (
         <div className="empty-state">
-          <strong>No transaction activity found yet.</strong>
+          <strong>No transactions found for this wallet yet.</strong>
           <p>
             Real sent, received, and bridge events will appear here after your
             wallet records them onchain.
@@ -110,7 +137,7 @@ export default function TransactionActivity({
 
       {liveStatus === "error" ? (
         <div className="empty-state empty-state-compact">
-          <strong>Live Arc activity temporarily unavailable.</strong>
+          <strong>Failed to load activity. Try again.</strong>
           <p>{liveError || "Please try again later."}</p>
         </div>
       ) : null}

@@ -1200,6 +1200,14 @@ button:disabled {
   flex-wrap: wrap;
 }
 
+.activity-heading-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .activity-card-copy,
 .activity-card-amount {
   display: grid;
