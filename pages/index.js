@@ -19,7 +19,7 @@ function WelcomeOverlay() {
   return (
     <div className="welcome-overlay" role="status" aria-live="polite">
       <span>Welcome to</span>
-      <strong>AI Powered Wallet Built on Arc</strong>
+      <strong>AI Wallet built on Arc</strong>
     </div>
   );
 }
@@ -37,7 +37,7 @@ export default function Home() {
   const [receiveOpen, setReceiveOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
-  const welcomedAddressRef = useRef("");
+  const wasSignedInRef = useRef(false);
 
   useEffect(() => {
     const syncViewFromHash = () => {
@@ -55,15 +55,21 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (
+    const justConnected =
       walletSnapshot.isSignedIn &&
       walletSnapshot.address &&
-      welcomedAddressRef.current !== walletSnapshot.address
-    ) {
-      welcomedAddressRef.current = walletSnapshot.address;
+      !wasSignedInRef.current;
+
+    wasSignedInRef.current = walletSnapshot.isSignedIn;
+
+    if (justConnected) {
       setShowWelcome(true);
-      const timeoutId = window.setTimeout(() => setShowWelcome(false), 1500);
+      const timeoutId = window.setTimeout(() => setShowWelcome(false), 4500);
       return () => window.clearTimeout(timeoutId);
+    }
+
+    if (!walletSnapshot.isSignedIn) {
+      setShowWelcome(false);
     }
 
     return undefined;
@@ -112,7 +118,7 @@ export default function Home() {
         <section className="wallet-dashboard-hero card">
           <div>
             <p className="section-kicker">Arc AI Wallet</p>
-            <h1>Welcome back</h1>
+            <h1>Welcome to your AI-powered wallet built on Arc.</h1>
             <p>
               A focused USDC wallet for Arc: send, receive, review activity, and
               ask the copilot when a blockchain action needs plain language.
@@ -128,25 +134,6 @@ export default function Home() {
           walletSnapshot={walletSnapshot}
           onReceiveClick={() => setReceiveOpen(true)}
         />
-
-        <section className="dashboard-problem-solution card">
-          <article>
-            <span className="field-label">Problem</span>
-            <strong>
-              Crypto wallets are still complex for normal users. Sending,
-              receiving, checking balance, and understanding wallet activity feels
-              confusing.
-            </strong>
-          </article>
-          <article>
-            <span className="field-label">Solution</span>
-            <strong>
-              This AI Powered Wallet built on Arc makes wallet actions simple with
-              wallet connection, USDC balance, receive QR, send flow, transaction
-              activity, and AI guidance in one clean interface.
-            </strong>
-          </article>
-        </section>
 
         <div className="wallet-workspace">
           <WalletSidebar

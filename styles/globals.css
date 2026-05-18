@@ -222,7 +222,7 @@ button:disabled {
   text-align: center;
   background: rgba(3, 6, 13, 0.82);
   backdrop-filter: blur(18px);
-  animation: welcomeFade 1.5s ease both;
+  animation: welcomeFade 4.5s ease both;
 }
 
 .welcome-overlay span {
@@ -235,6 +235,10 @@ button:disabled {
 .welcome-overlay strong {
   font-size: clamp(1.4rem, 4vw, 2.5rem);
   letter-spacing: -0.05em;
+  text-shadow:
+    0 0 18px rgba(102, 182, 255, 0.28),
+    0 0 42px rgba(142, 107, 255, 0.22);
+  animation: welcomePulse 4.5s ease both;
 }
 
 .wallet-dashboard-hero {
@@ -255,20 +259,6 @@ button:disabled {
   margin: 0;
   color: var(--muted);
   line-height: 1.75;
-}
-
-.dashboard-problem-solution {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.dashboard-problem-solution article {
-  display: grid;
-  gap: 10px;
-}
-
-.dashboard-problem-solution strong {
-  line-height: 1.7;
-  font-size: 0.98rem;
 }
 
 .wallet-workspace {
@@ -1448,12 +1438,31 @@ button:disabled {
   0% {
     opacity: 0;
   }
-  18%,
-  72% {
+  14%,
+  78% {
     opacity: 1;
   }
   100% {
     opacity: 0;
+  }
+}
+
+@keyframes welcomePulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  68% {
+    opacity: 1;
+    transform: scale(1.035);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.06);
   }
 }
 
@@ -1584,7 +1593,6 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
-  .dashboard-problem-solution,
   .wallet-workspace {
     grid-template-columns: 1fr;
   }
